@@ -1,7 +1,7 @@
 package goraff
 
 // Condition is a condition that must be met for an edge to be taken
-type FollowCondition interface {
+type FollowIf interface {
 	Match(s *StateReadOnly) bool
 }
 
@@ -9,7 +9,7 @@ type FollowCondition interface {
 type Edge struct {
 	From      *Node
 	To        *Node
-	Condition FollowCondition
+	Condition FollowIf
 }
 
 func (e *Edge) Match(s *StateReadOnly) bool {
@@ -30,6 +30,6 @@ func (e *followIfKeyMatches) Match(s *StateReadOnly) bool {
 	return s.NodeState(e.NodeID).Get(e.Key) == e.Value
 }
 
-func FollowIfKeyMatches(nodeID, key, value string) FollowCondition {
+func FollowIfKeyMatches(nodeID, key, value string) FollowIf {
 	return &followIfKeyMatches{NodeID: nodeID, Key: key, Value: value}
 }

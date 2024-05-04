@@ -67,7 +67,7 @@ func (e ErrNodeNotFound) Error() string {
 	return "node not found: " + e.ID
 }
 
-func (g *Graph) AddEdge(fromID, toID string, condition FollowCondition) error {
+func (g *Graph) AddEdge(fromID, toID string, condition FollowIf) error {
 	from := g.nodeByID(fromID)
 	if from == nil {
 		return ErrNodeNotFound{
