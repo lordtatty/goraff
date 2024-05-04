@@ -14,7 +14,7 @@ func TestEdgeCondition_KeyMatches(t *testing.T) {
 	edge.Condition = sut
 	state := &goraff.State{}
 	state.NodeState("node1").Set("key1", "value1")
-	assert.True(edge.Match(state.ReadOnly()))
+	assert.True(edge.TriggersMet(state.ReadOnly()))
 }
 
 func TestEdgeCondition_KeyMatches_Fails(t *testing.T) {
@@ -24,5 +24,5 @@ func TestEdgeCondition_KeyMatches_Fails(t *testing.T) {
 	edge.Condition = sut
 	state := &goraff.State{}
 	state.NodeState("node1").Set("key1", "value2")
-	assert.False(edge.Match(state.ReadOnly()))
+	assert.False(edge.TriggersMet(state.ReadOnly()))
 }

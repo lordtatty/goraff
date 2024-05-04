@@ -12,7 +12,7 @@ type Edge struct {
 	Condition FollowIf
 }
 
-func (e *Edge) Match(s *StateReadOnly) bool {
+func (e *Edge) TriggersMet(s *StateReadOnly) bool {
 	if e.Condition == nil {
 		// without a conditon, we always follow the edge
 		return true

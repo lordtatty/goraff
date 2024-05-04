@@ -107,7 +107,7 @@ func (g *Graph) runNode(n *Node, triggeringNodeID string) {
 	nextNodes := []*Node{}
 	if edges, ok := g.edges[n.ID()]; ok {
 		for _, e := range edges {
-			if e.Match(r) {
+			if e.TriggersMet(r) {
 				nextNodes = append(nextNodes, e.To)
 			}
 		}
