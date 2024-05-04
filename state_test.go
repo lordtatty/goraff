@@ -30,13 +30,13 @@ func TestState_NodeState(t *testing.T) {
 	assert := assert.New(t)
 	s := goraff.State{}
 	// Test that this creates a new node state
-	n := s.NodeState("node1")
+	n := s.NodeStateUpsert("node1")
 	n.Set("key1", "value1")
 	n.Set("key2", "value2")
 	assert.Equal("value1", n.Get("key1"))
 	assert.Equal("value2", n.Get("key2"))
 	// Test that this returns the same already-created state
-	n2 := s.NodeState("node1")
+	n2 := s.NodeStateUpsert("node1")
 	assert.Equal("value1", n2.Get("key1"))
 	assert.Equal("value2", n2.Get("key2"))
 	// Test the id
@@ -47,7 +47,7 @@ func TestState_StateReadOnly(t *testing.T) {
 	assert := assert.New(t)
 	s := goraff.State{}
 	// Test that this creates a new node state
-	n := s.NodeState("node1")
+	n := s.NodeStateUpsert("node1")
 	n.Set("key1", "value1")
 	n.Set("key2", "value2")
 	r := s.ReadOnly()
@@ -60,7 +60,7 @@ func TestState_StateReadOnly_ID(t *testing.T) {
 	assert := assert.New(t)
 	s := goraff.State{}
 	// Test that this creates a new node state
-	n := s.NodeState("node1")
+	n := s.NodeStateUpsert("node1")
 	n.Set("key1", "value1")
 	n.Set("key2", "value2")
 	r := s.ReadOnly()

@@ -5,6 +5,18 @@ type State struct {
 	nodeStates []*NodeState
 }
 
+func (s *State) NodeStateUpsert(id string) *NodeState {
+	// First see if we have this node state
+	ns := s.NodeState(id)
+	if ns != nil {
+		return ns
+	}
+	// Else create a new node state
+	ns = &NodeState{nodeID: id}
+	s.nodeStates = append(s.nodeStates, ns)
+	return ns
+}
+
 func (s *State) NodeState(id string) *NodeState {
 	// First see if we have this node state
 	for _, ns := range s.nodeStates {
@@ -12,10 +24,7 @@ func (s *State) NodeState(id string) *NodeState {
 			return ns
 		}
 	}
-	// Else create a new node state
-	ns := &NodeState{nodeID: id}
-	s.nodeStates = append(s.nodeStates, ns)
-	return ns
+	return nil
 }
 
 func (s *State) ReadOnly() *StateReadOnly {
@@ -29,6 +38,9 @@ type StateReadOnly struct {
 
 func (s *StateReadOnly) NodeState(id string) *NodeStateReadOnly {
 	r := s.state.NodeState(id)
+	if r == nil {
+		return nil
+	}
 	return &NodeStateReadOnly{r}
 }
 

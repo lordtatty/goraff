@@ -81,7 +81,7 @@ func TestGraph_Go_NoEdges(t *testing.T) {
 
 	state := g.State()
 	assert.Equal("action1", state.NodeState(n1).Get("action1_key"))
-	assert.Equal("", state.NodeState(n2).Get("action2_key")) // Action 2 should not have run
+	assert.Nil(state.NodeState(n2)) // Action 2 should not have run
 }
 
 func TestGraph_Go_WithEdges(t *testing.T) {
@@ -131,7 +131,7 @@ func TestGraph_ConditionalEdges(t *testing.T) {
 
 	state := g.State()
 	assert.Equal("action1", state.NodeState(n1).Get("action1_key"))
-	assert.Equal("", state.NodeState(n2).Get("action2_key"))
+	assert.Nil(state.NodeState(n2)) // Action 2 should not have run
 	assert.Equal("action1 :: action3", state.NodeState(n3).Get("action3_key"))
 }
 

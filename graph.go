@@ -147,7 +147,7 @@ func (g *Graph) flowMgr() error {
 }
 
 func (g *Graph) runNode(n *Node, triggeringNodeID string) []*Node {
-	s := g.state.NodeState(n.ID())
+	s := g.state.NodeStateUpsert(n.ID())
 	r := g.state.ReadOnly()
 	n.Action.Do(s, r, triggeringNodeID)
 	nextNodes := []*Node{}

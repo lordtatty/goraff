@@ -40,10 +40,11 @@ type followIfNodesCompleted struct {
 
 func (e *followIfNodesCompleted) Match(s *StateReadOnly) bool {
 	for _, nodeID := range e.NodeIDs {
-		if s.NodeState(nodeID) == nil {
+		st := s.NodeState(nodeID)
+		if st == nil {
 			return false
 		}
-		if !s.NodeState(nodeID).Done() {
+		if !st.Done() {
 			return false
 		}
 	}
