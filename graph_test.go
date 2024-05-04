@@ -230,3 +230,11 @@ func TestGraph_StateIsMarkedDoneBeforeTriggers(t *testing.T) {
 	assert.Equal("action1 :: action2", state.NodeState(n2).Get("action2_key"))
 	assert.Equal("action2 :: action3", state.NodeState(n3).Get("action3_key"))
 }
+
+func TestGraph_EntrypointNotSet(t *testing.T) {
+	assert := assert.New(t)
+	g := &goraff.Graph{}
+	err := g.Go()
+	assert.Error(err)
+	assert.Equal("entrypoint not set", err.Error())
+}
