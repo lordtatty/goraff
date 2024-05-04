@@ -36,6 +36,11 @@ func (s *StateReadOnly) NodeState(id string) *NodeStateReadOnly {
 type NodeState struct {
 	nodeID string
 	state  map[string]string
+	done   bool
+}
+
+func (n *NodeState) MarkDone() {
+	n.done = true
 }
 
 func (n *NodeState) Get(key string) string {
@@ -67,4 +72,8 @@ func (s *NodeStateReadOnly) Get(key string) string {
 
 func (s *NodeStateReadOnly) ID() string {
 	return s.state.ID()
+}
+
+func (s *NodeStateReadOnly) Done() bool {
+	return s.state.done
 }

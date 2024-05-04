@@ -151,6 +151,7 @@ func (g *Graph) runNode(n *Node, triggeringNodeID string) []*Node {
 	r := g.state.ReadOnly()
 	n.Action.Do(s, r, triggeringNodeID)
 	nextNodes := []*Node{}
+	s.MarkDone()
 	if edges, ok := g.edges[n.ID()]; ok {
 		for _, e := range edges {
 			if e.TriggersMet(r) {

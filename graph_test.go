@@ -187,3 +187,46 @@ func TestGraph_FanOutNodes_Parallel(t *testing.T) {
 	assert.Equal("action1 :: action3", state.NodeState(n3).Get("action3_key"))
 	assert.Equal("action1 :: action4", state.NodeState(n4).Get("action4_key"))
 }
+
+type mockFollowIfWantsDone struct {
+	nodeIDs []string
+	t       *testing.T
+}
+
+func (f *mockFollowIfWantsDone) Match(s *goraff.StateReadOnly) bool {
+	assert := assert.New(f.t)
+	for _, nodeID := range f.nodeIDs {
+		st := s.NodeState(nodeID)
+		d := st.Done()
+		fmt.Println(d)
+		assert.NotNil(st)
+		assert.True(st.Done())
+	}
+	return true
+}
+
+func TestGraph_StateIsMarkedDoneBeforeTriggers(t *testing.T) {
+	// The state should be marked done before the triggers are checked
+	// Because some triggers may rely on the state being done
+	assert := assert.New(t)
+	g := &goraff.Graph{}
+
+	a1 := &actionMock{name: "action1"}
+	n1 := g.AddNode(a1)
+	a2 := &actionMock{name: "action2", lastName: "action1"}
+	n2 := g.AddNode(a2)
+	a3 := &actionMock{name: "action3", lastName: "action2"}
+	n3 := g.AddNode(a3)
+
+	g.SetEntrypoint(n1)
+	g.AddEdge(n1, n2, nil)
+	followIf := &mockFollowIfWantsDone{nodeIDs: []string{n2}, t: t}
+	g.AddEdge(n2, n3, followIf)
+
+	g.Go()
+
+	state := g.State()
+	assert.Equal("action1", state.NodeState(n1).Get("action1_key"))
+	assert.Equal("action1 :: action2", state.NodeState(n2).Get("action2_key"))
+	assert.Equal("action2 :: action3", state.NodeState(n3).Get("action3_key"))
+}

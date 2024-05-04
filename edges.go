@@ -33,3 +33,23 @@ func (e *followIfKeyMatches) Match(s *StateReadOnly) bool {
 func FollowIfKeyMatches(nodeID, key, value string) FollowIf {
 	return &followIfKeyMatches{NodeID: nodeID, Key: key, Value: value}
 }
+
+type followIfNodesCompleted struct {
+	NodeIDs []string
+}
+
+func (e *followIfNodesCompleted) Match(s *StateReadOnly) bool {
+	for _, nodeID := range e.NodeIDs {
+		if s.NodeState(nodeID) == nil {
+			return false
+		}
+		if !s.NodeState(nodeID).Done() {
+			return false
+		}
+	}
+	return true
+}
+
+func FollowIfNodesCompleted(nodeIDs ...string) FollowIf {
+	return &followIfNodesCompleted{NodeIDs: nodeIDs}
+}
