@@ -30,6 +30,6 @@ func (e *edgeConditionKeyMatches) Match(s *StateReadOnly) bool {
 	return s.NodeState(e.NodeID).Get(e.Key) == e.Value
 }
 
-func EdgeConditionKeyMatches(nodeID, key, value string) EdgeCondition {
+func FollowIfKeyMatches(nodeID, key, value string) EdgeCondition {
 	return &edgeConditionKeyMatches{NodeID: nodeID, Key: key, Value: value}
 }

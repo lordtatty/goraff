@@ -117,8 +117,8 @@ func TestGraph_ConditionalEdges(t *testing.T) {
 
 	g.SetEntrypoint(n1)
 	// Both n2 and n3 should follow n1, but only n3 should match the condition
-	g.AddEdge(n1, n2, goraff.EdgeConditionKeyMatches(n1, "action1_key", "should not match"))
-	g.AddEdge(n1, n3, goraff.EdgeConditionKeyMatches(n1, "action1_key", "action1"))
+	g.AddEdge(n1, n2, goraff.FollowIfKeyMatches(n1, "action1_key", "should not match"))
+	g.AddEdge(n1, n3, goraff.FollowIfKeyMatches(n1, "action1_key", "action1"))
 
 	g.Go()
 

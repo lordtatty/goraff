@@ -9,7 +9,7 @@ import (
 
 func TestEdgeCondition_KeyMatches(t *testing.T) {
 	assert := assert.New(t)
-	sut := goraff.EdgeConditionKeyMatches("node1", "key1", "value1")
+	sut := goraff.FollowIfKeyMatches("node1", "key1", "value1")
 	edge := &goraff.Edge{}
 	edge.Condition = sut
 	state := &goraff.State{}
@@ -19,7 +19,7 @@ func TestEdgeCondition_KeyMatches(t *testing.T) {
 
 func TestEdgeCondition_KeyMatches_Fails(t *testing.T) {
 	assert := assert.New(t)
-	sut := goraff.EdgeConditionKeyMatches("node1", "key1", "value1")
+	sut := goraff.FollowIfKeyMatches("node1", "key1", "value1")
 	edge := &goraff.Edge{}
 	edge.Condition = sut
 	state := &goraff.State{}
