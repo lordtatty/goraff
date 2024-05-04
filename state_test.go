@@ -55,3 +55,15 @@ func TestState_StateReadOnly(t *testing.T) {
 	assert.Equal("value1", nr.Get("key1"))
 	assert.Equal("value2", nr.Get("key2"))
 }
+
+func TestState_StateReadOnly_ID(t *testing.T) {
+	assert := assert.New(t)
+	s := goraff.State{}
+	// Test that this creates a new node state
+	n := s.NodeState("node1")
+	n.Set("key1", "value1")
+	n.Set("key2", "value2")
+	r := s.ReadOnly()
+	nr := r.NodeState("node1")
+	assert.Equal("node1", nr.ID())
+}
