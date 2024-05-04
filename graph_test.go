@@ -179,7 +179,7 @@ func TestGraph_FanOutNodes_Parallel(t *testing.T) {
 	start := time.Now()
 	g.Go()
 	elapsed := time.Since(start)
-	assert.True(elapsed < 2500*time.Millisecond, "Elapsed time should be less than 2.5 seconds")
+	assert.True(elapsed < 2500*time.Millisecond, "Elapsed time should be less than 2.5 seconds (first node, parallel nodes, and a bit of leeway)")
 
 	state := g.State()
 	assert.Equal("action1", state.NodeState(n1).Get("action1_key"))
