@@ -1,6 +1,11 @@
 package goraff
 
-import "github.com/google/uuid"
+import (
+	"fmt"
+	"sync"
+
+	"github.com/google/uuid"
+)
 
 type NodeAction interface {
 	Do(s *NodeState, r *StateReadOnly, triggeringNodeID string)
@@ -91,16 +96,57 @@ func (g *Graph) AddEdge(fromID, toID string, condition FollowIf) error {
 	return nil
 }
 
-func (g *Graph) Go() {
+func (g *Graph) Go() error {
 	if g.state == nil {
 		g.state = &State{}
 	}
-	if g.entrypoint != nil {
-		g.runNode(g.entrypoint, "")
-	}
+	return g.flowMgr()
 }
 
-func (g *Graph) runNode(n *Node, triggeringNodeID string) {
+type nextNode struct {
+	Node         *Node
+	triggeringID string
+}
+
+func (g *Graph) flowMgr() error {
+	if g.entrypoint == nil {
+		return fmt.Errorf("entrypoint not set")
+	}
+
+	nodeCh := make(chan nextNode, 10)
+	var wg sync.WaitGroup
+
+	nodeCh <- nextNode{
+		Node:         g.entrypoint,
+		triggeringID: "",
+	}
+	wg.Add(1) // Increment for the initial node
+
+	fmt.Println("starting node", g.entrypoint.ID())
+	go func() {
+		for n := range nodeCh {
+			go func(n nextNode) {
+				fmt.Println("completed node", n.Node.ID())
+				defer wg.Done() // Ensure we mark this goroutine as done on finish
+				nextNodes := g.runNode(n.Node, n.triggeringID)
+				for _, next := range nextNodes {
+					fmt.Println("adding node", next.ID())
+					wg.Add(1) // Increment for each new node
+					nodeCh <- nextNode{
+						Node:         next,
+						triggeringID: n.Node.ID(),
+					}
+				}
+			}(n)
+		}
+	}()
+
+	wg.Wait()     // Wait for all goroutines to finish
+	close(nodeCh) // Safe to close here as no more writes will happen
+	return nil
+}
+
+func (g *Graph) runNode(n *Node, triggeringNodeID string) []*Node {
 	s := g.state.NodeState(n.ID())
 	r := g.state.ReadOnly()
 	n.Action.Do(s, r, triggeringNodeID)
@@ -112,10 +158,5 @@ func (g *Graph) runNode(n *Node, triggeringNodeID string) {
 			}
 		}
 	}
-	if len(nextNodes) == 0 {
-		return
-	}
-	for _, nextNode := range nextNodes {
-		g.runNode(nextNode, n.ID())
-	}
+	return nextNodes
 }

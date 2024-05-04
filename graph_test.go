@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/lordtatty/goraff"
 	"github.com/stretchr/testify/assert"
@@ -40,12 +41,18 @@ type actionMock struct {
 	lastName    string
 	expectNoRun bool
 	t           *testing.T
+	delay       time.Duration
 }
 
 func (a *actionMock) Do(s *goraff.NodeState, r *goraff.StateReadOnly, triggeringNodeID string) {
 	if a.expectNoRun {
 		a.t.Error("Action should not have run")
 	}
+	// Wait if a delay is set
+	if a.delay > 0 {
+		time.Sleep(a.delay)
+	}
+	// Set the key to the name of the action
 	key := fmt.Sprintf("%s_key", a.name)
 	if a.lastName == "" {
 		s.Set(key, a.name)
@@ -144,4 +151,39 @@ func TestGraph_AddEdge_Node2NotFound(t *testing.T) {
 	err := g.AddEdge(n1, "node2", nil)
 	assert.Error(err)
 	assert.Equal("node not found: node2", err.Error())
+}
+
+func TestGraph_FanOutNodes_Parallel(t *testing.T) {
+	// In this test we are checking tha we can fan out from a node
+	// and, importantly, that the actions run in parallel
+	// We will check parallelisation by delaying each action by a second.
+	// The first runs immediately, the next three should run in parallel
+	// and making sure the whole graph completes in around 2 seconds (not 4)
+	assert := assert.New(t)
+	g := &goraff.Graph{}
+
+	a1 := &actionMock{name: "action1", delay: 1 * time.Second}
+	n1 := g.AddNode(a1)
+	a2 := &actionMock{name: "action2", lastName: "action1", delay: 1 * time.Second}
+	n2 := g.AddNode(a2)
+	a3 := &actionMock{name: "action3", lastName: "action1", delay: 1 * time.Second}
+	n3 := g.AddNode(a3)
+	a4 := &actionMock{name: "action4", lastName: "action1", delay: 1 * time.Second}
+	n4 := g.AddNode(a4)
+
+	g.SetEntrypoint(n1)
+	g.AddEdge(n1, n2, nil)
+	g.AddEdge(n1, n3, nil)
+	g.AddEdge(n1, n4, nil)
+
+	start := time.Now()
+	g.Go()
+	elapsed := time.Since(start)
+	assert.True(elapsed < 2500*time.Millisecond, "Elapsed time should be less than 2.5 seconds")
+
+	state := g.State()
+	assert.Equal("action1", state.NodeState(n1).Get("action1_key"))
+	assert.Equal("action1 :: action2", state.NodeState(n2).Get("action2_key"))
+	assert.Equal("action1 :: action3", state.NodeState(n3).Get("action3_key"))
+	assert.Equal("action1 :: action4", state.NodeState(n4).Get("action4_key"))
 }
