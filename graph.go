@@ -1,10 +1,12 @@
 package goraff
 
 import (
+	"encoding/json"
 	"fmt"
 	"sync"
 
 	"github.com/google/uuid"
+	"github.com/lordtatty/goraff/websocket"
 )
 
 type NodeAction interface {
@@ -189,4 +191,24 @@ func (g *Graph) runNode(n *Node, triggeringNodeID string) ([]*Node, error) {
 		}
 	}
 	return nextNodes, nil
+}
+
+func (g *Graph) BroadcastChanges(ws *websocket.WebSocketServer) {
+	if g.state == nil {
+		g.state = &State{}
+	}
+	g.state.OnUpdate = func(s *StateReadOnly) {
+		o := s.Outputs()
+		fmt.Println("##########################################")
+		fmt.Println("##########################################")
+		fmt.Println("##########################################")
+		b, _ := json.MarshalIndent(o, "", "  ")
+		fmt.Println(string(b))
+		snd, err := json.Marshal(o)
+		if err != nil {
+			fmt.Println("error marshalling state")
+			return
+		}
+		ws.Send(string(snd))
+	}
 }

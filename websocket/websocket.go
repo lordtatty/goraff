@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/gorilla/websocket"
-	"github.com/lordtatty/goraff"
 )
 
 type Item struct {
@@ -19,7 +18,7 @@ type WebSocketServer struct {
 	Addr      string
 	Upgrader  websocket.Upgrader
 	clients   map[*websocket.Conn]bool
-	broadcast chan []goraff.NodeOutput
+	broadcast chan string
 }
 
 func NewWebSocketServer(addr string) *WebSocketServer {
@@ -31,7 +30,7 @@ func NewWebSocketServer(addr string) *WebSocketServer {
 			CheckOrigin:     func(r *http.Request) bool { return true },
 		},
 		clients:   make(map[*websocket.Conn]bool),
-		broadcast: make(chan []goraff.NodeOutput),
+		broadcast: make(chan string),
 	}
 }
 
@@ -55,9 +54,9 @@ func (s *WebSocketServer) handleConnections(w http.ResponseWriter, r *http.Reque
 
 func (server *WebSocketServer) handleMessages() {
 	for {
-		items := <-server.broadcast
+		msg := <-server.broadcast
 		for client := range server.clients {
-			err := client.WriteJSON(items)
+			err := client.WriteMessage(websocket.TextMessage, []byte(msg))
 			if err != nil {
 				log.Printf("error: %v", err)
 				client.Close()
@@ -74,8 +73,9 @@ func (server *WebSocketServer) Serve() {
 	log.Fatal(http.ListenAndServe(server.Addr, nil))
 }
 
-func (server *WebSocketServer) Send(items []goraff.NodeOutput) {
-	server.broadcast <- items
+func (server *WebSocketServer) Send(msg string) {
+	// msg to a json map
+	server.broadcast <- msg
 }
 
 func (s *WebSocketServer) WaitForConnection() {
