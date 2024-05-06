@@ -42,9 +42,10 @@ type actionMock struct {
 	expectNoRun bool
 	t           *testing.T
 	delay       time.Duration
+	err         error
 }
 
-func (a *actionMock) Do(s *goraff.NodeState, r *goraff.StateReadOnly, triggeringNodeID string) {
+func (a *actionMock) Do(s *goraff.NodeState, r *goraff.StateReadOnly, triggeringNodeID string) error {
 	if a.expectNoRun {
 		a.t.Error("Action should not have run")
 	}
@@ -52,11 +53,14 @@ func (a *actionMock) Do(s *goraff.NodeState, r *goraff.StateReadOnly, triggering
 	if a.delay > 0 {
 		time.Sleep(a.delay)
 	}
+	if a.err != nil {
+		return a.err
+	}
 	// Set the key to the name of the action
 	key := fmt.Sprintf("%s_key", a.name)
 	if a.lastName == "" {
 		s.Set(key, a.name)
-		return
+		return nil
 	}
 	ls := r.NodeState(triggeringNodeID)
 	lastKey := fmt.Sprintf("%s_key", a.lastName)
@@ -66,6 +70,7 @@ func (a *actionMock) Do(s *goraff.NodeState, r *goraff.StateReadOnly, triggering
 	lastVal = parts[len(parts)-1]
 	val := fmt.Sprintf("%s :: %s", lastVal, a.name)
 	s.Set(key, val)
+	return nil
 }
 
 func TestGraph_Go_NoEdges(t *testing.T) {
@@ -82,6 +87,23 @@ func TestGraph_Go_NoEdges(t *testing.T) {
 	state := g.State()
 	assert.Equal("action1", state.NodeState(n1).Get("action1_key"))
 	assert.Nil(state.NodeState(n2)) // Action 2 should not have run
+}
+
+func TestGraph_NodeHasError(t *testing.T) {
+	assert := assert.New(t)
+	g := &goraff.Graph{}
+	a1 := &actionMock{name: "action1"}
+	a2 := &actionMock{name: "action2", lastName: "action1", err: fmt.Errorf("error"), t: t}
+
+	n1 := g.AddNode(a1)
+	n2 := g.AddNode(a2)
+
+	g.AddEdge(n1, n2, nil)
+
+	g.SetEntrypoint(n1)
+	err := g.Go()
+	assert.Error(err)
+	assert.Equal("error running node: error", err.Error())
 }
 
 func TestGraph_Go_WithEdges(t *testing.T) {

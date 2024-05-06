@@ -8,7 +8,7 @@ import (
 )
 
 type NodeAction interface {
-	Do(s *NodeState, r *StateReadOnly, triggeringNodeID string)
+	Do(s *NodeState, r *StateReadOnly, triggeringNodeID string) error
 }
 
 // Node represents a node in the graph
@@ -119,26 +119,38 @@ func (g *Graph) flowMgr() error {
 		return fmt.Errorf("entrypoint not set")
 	}
 
-	nodeCh := make(chan nextNode, 10)
+	completedCh := make(chan nextNode, 10)
 	var wg sync.WaitGroup
 
-	nodeCh <- nextNode{
+	completedCh <- nextNode{
 		Node:         g.entrypoint,
 		triggeringID: "",
 	}
 	wg.Add(1) // Increment for the initial node
 
 	fmt.Println("starting node", g.entrypoint.ID())
+	var foundErr error
+	mut := sync.Mutex{}
 	go func() {
-		for n := range nodeCh {
+		for n := range completedCh {
 			go func(n nextNode) {
 				fmt.Println("completed node", n.Node.ID())
 				defer wg.Done() // Ensure we mark this goroutine as done on finish
-				nextNodes := g.runNode(n.Node, n.triggeringID)
+				if foundErr != nil {
+					return
+				}
+				nextNodes, err := g.runNode(n.Node, n.triggeringID)
+				if err != nil {
+					fmt.Println("error running node, letting all nodes drain: ", n.Node.ID())
+					mut.Lock()
+					foundErr = fmt.Errorf("error running node: %w", err)
+					mut.Unlock()
+					return
+				}
 				for _, next := range nextNodes {
 					fmt.Println("adding node", next.ID())
 					wg.Add(1) // Increment for each new node
-					nodeCh <- nextNode{
+					completedCh <- nextNode{
 						Node:         next,
 						triggeringID: n.Node.ID(),
 					}
@@ -147,15 +159,18 @@ func (g *Graph) flowMgr() error {
 		}
 	}()
 
-	wg.Wait()     // Wait for all goroutines to finish
-	close(nodeCh) // Safe to close here as no more writes will happen
-	return nil
+	wg.Wait()          // Wait for all goroutines to finish
+	close(completedCh) // Safe to close here as no more writes will happen
+	return foundErr
 }
 
-func (g *Graph) runNode(n *Node, triggeringNodeID string) []*Node {
+func (g *Graph) runNode(n *Node, triggeringNodeID string) ([]*Node, error) {
 	s := g.state.NodeStateUpsert(n.ID())
 	r := g.state.ReadOnly()
-	n.Action.Do(s, r, triggeringNodeID)
+	err := n.Action.Do(s, r, triggeringNodeID)
+	if err != nil {
+		return nil, err
+	}
 	nextNodes := []*Node{}
 	s.MarkDone()
 	if edges, ok := g.edges[n.ID()]; ok {
@@ -165,5 +180,5 @@ func (g *Graph) runNode(n *Node, triggeringNodeID string) []*Node {
 			}
 		}
 	}
-	return nextNodes
+	return nextNodes, nil
 }
