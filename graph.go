@@ -57,7 +57,7 @@ func (g *Graph) AddNode(a NodeAction) string {
 	return n.ID()
 }
 
-func (g *Graph) AddNodeWithName(a NodeAction, name string) string {
+func (g *Graph) AddNodeWithName(name string, a NodeAction) string {
 	n := &Node{Action: a, Name: name}
 	g.nodes = append(g.nodes, n)
 	return n.ID()

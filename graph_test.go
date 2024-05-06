@@ -266,7 +266,7 @@ func TestNode_RunningSetsName(t *testing.T) {
 	g := &goraff.Graph{}
 
 	a1 := &actionMock{name: "action1"}
-	n1 := g.AddNodeWithName(a1, "named_node")
+	n1 := g.AddNodeWithName("named_node", a1)
 	g.SetEntrypoint(n1)
 	g.Go()
 
