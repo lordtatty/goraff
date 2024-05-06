@@ -72,9 +72,11 @@ func TestState_OnUpdate(t *testing.T) {
 	assert := assert.New(t)
 	updated := false
 	s := goraff.State{
-		OnUpdate: func(s *goraff.StateReadOnly) {
-			assert.Equal("value", s.NodeState("node1").Get("key"))
-			updated = true
+		OnUpdate: []func(s *goraff.StateReadOnly){
+			func(s *goraff.StateReadOnly) {
+				assert.Equal("value", s.NodeState("node1").Get("key"))
+				updated = true
+			},
 		},
 	}
 	n := s.NodeStateUpsert("node1")

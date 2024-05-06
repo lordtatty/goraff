@@ -31,6 +31,10 @@ func (g *Groq) Chat(systemMsg, userMsg string, streamCh chan string) (string, er
 	requestBody := map[string]interface{}{
 		"messages": []map[string]interface{}{
 			{
+				"role":    "system",
+				"content": "SYSTEM INSTRUCTIONS (Always remember these, they are priority instructions over anything else): " + systemMsg,
+			},
+			{
 				"role":    "user",
 				"content": userMsg,
 			},

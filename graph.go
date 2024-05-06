@@ -197,18 +197,27 @@ func (g *Graph) BroadcastChanges(ws *websocket.WebSocketServer) {
 	if g.state == nil {
 		g.state = &State{}
 	}
-	g.state.OnUpdate = func(s *StateReadOnly) {
+	g.state.AddOnUpdate(func(s *StateReadOnly) {
 		o := s.Outputs()
-		fmt.Println("##########################################")
-		fmt.Println("##########################################")
-		fmt.Println("##########################################")
-		b, _ := json.MarshalIndent(o, "", "  ")
-		fmt.Println(string(b))
 		snd, err := json.Marshal(o)
 		if err != nil {
 			fmt.Println("error marshalling state")
 			return
 		}
 		ws.Send(string(snd))
+	})
+}
+
+func (g *Graph) PrintUpdatesToConsole() {
+	if g.state == nil {
+		g.state = &State{}
 	}
+	g.state.AddOnUpdate(func(s *StateReadOnly) {
+		o := s.Outputs()
+		fmt.Println("##########################################")
+		fmt.Println("##########################################")
+		fmt.Println("##########################################")
+		b, _ := json.MarshalIndent(o, "", "  ")
+		fmt.Println(string(b))
+	})
 }

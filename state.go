@@ -3,14 +3,20 @@ package goraff
 // State manages the state of all nodes in the graph
 type State struct {
 	nodeStates []*NodeState
-	OnUpdate   func(s *StateReadOnly)
+	OnUpdate   []func(s *StateReadOnly)
+}
+
+func (s *State) AddOnUpdate(f func(s *StateReadOnly)) {
+	s.OnUpdate = append(s.OnUpdate, f)
 }
 
 func (s *State) onUpdate() {
 	if s.OnUpdate == nil {
 		return
 	}
-	s.OnUpdate(s.ReadOnly())
+	for _, f := range s.OnUpdate {
+		f(s.ReadOnly())
+	}
 }
 
 func (s *State) NodeStateUpsert(id string) *NodeState {

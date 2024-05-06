@@ -48,11 +48,13 @@ func TestLLM_Do(t *testing.T) {
 	}
 	msgIdx := 0
 	s := &goraff.State{
-		OnUpdate: func(s *goraff.StateReadOnly) {
-			fmt.Println("===")
-			msgIdx++
-			want := strings.Join(expectedMessages[:msgIdx], "")
-			assert.Equal(want, s.NodeState("node1").Get("result"))
+		OnUpdate: []func(s *goraff.StateReadOnly){
+			func(s *goraff.StateReadOnly) {
+				fmt.Println("===")
+				msgIdx++
+				want := strings.Join(expectedMessages[:msgIdx], "")
+				assert.Equal(want, s.NodeState("node1").Get("result"))
+			},
 		},
 	}
 	n := s.NodeStateUpsert("node1")
