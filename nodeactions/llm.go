@@ -15,14 +15,10 @@ type LLM struct {
 	UserMsg        string
 	Client         LLMClient
 	IncludeOutputs []string
-	StateVals      map[string]string
 }
 
 func (l *LLM) Do(s *goraff.NodeState, r *goraff.StateReadOnly, triggeringNodeID string) error {
-	fmt.Println("Running LLM Node" + l.StateVals["name"])
-	for key, val := range l.StateVals {
-		s.Set(key, val)
-	}
+	fmt.Println("Running LLM Node")
 	msg := l.buildIncludes(r)
 	msg = msg + "\n\n" + l.UserMsg
 	streamCh := make(chan string)
@@ -35,7 +31,6 @@ func (l *LLM) Do(s *goraff.NodeState, r *goraff.StateReadOnly, triggeringNodeID 
 	result := ""
 	for r := range streamCh {
 		result += r
-		fmt.Println("sending message: " + result)
 		s.Set("result", result)
 	}
 	if err != nil {
