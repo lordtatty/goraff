@@ -10,11 +10,21 @@ import (
 	"strings"
 )
 
+const (
+	GROQ_MODEL_LLAMA3_8B_8192  = "llama3-8b-8192"
+	GROQ_MODEL_LLAMA3_70B_8192 = "llama3-70b-8192"
+)
+
 type Groq struct {
 	APIKey string
+	Model  string
 }
 
 func (g *Groq) Chat(systemMsg, userMsg string, streamCh chan string) (string, error) {
+	if g.Model == "" {
+		// default to smaller model
+		g.Model = GROQ_MODEL_LLAMA3_8B_8192
+	}
 	url := "https://api.groq.com/openai/v1/chat/completions"
 
 	// Construct the request body
@@ -25,7 +35,7 @@ func (g *Groq) Chat(systemMsg, userMsg string, streamCh chan string) (string, er
 				"content": userMsg,
 			},
 		},
-		"model":  "llama3-8b-8192",
+		"model":  g.Model,
 		"stream": false,
 	}
 
