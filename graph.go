@@ -15,6 +15,7 @@ type NodeAction interface {
 type Node struct {
 	id     string
 	Action NodeAction
+	Name   string
 }
 
 func (n *Node) ID() string {
@@ -52,6 +53,12 @@ func (g *Graph) Len() int {
 
 func (g *Graph) AddNode(a NodeAction) string {
 	n := &Node{Action: a}
+	g.nodes = append(g.nodes, n)
+	return n.ID()
+}
+
+func (g *Graph) AddNodeWithName(a NodeAction, name string) string {
+	n := &Node{Action: a, Name: name}
 	g.nodes = append(g.nodes, n)
 	return n.ID()
 }
@@ -166,6 +173,7 @@ func (g *Graph) flowMgr() error {
 
 func (g *Graph) runNode(n *Node, triggeringNodeID string) ([]*Node, error) {
 	s := g.state.NodeStateUpsert(n.ID())
+	s.Set("name", n.Name)
 	r := g.state.ReadOnly()
 	err := n.Action.Do(s, r, triggeringNodeID)
 	if err != nil {

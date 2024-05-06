@@ -260,3 +260,17 @@ func TestGraph_EntrypointNotSet(t *testing.T) {
 	assert.Error(err)
 	assert.Equal("entrypoint not set", err.Error())
 }
+
+func TestNode_RunningSetsName(t *testing.T) {
+	assert := assert.New(t)
+	g := &goraff.Graph{}
+
+	a1 := &actionMock{name: "action1"}
+	n1 := g.AddNodeWithName(a1, "named_node")
+	g.SetEntrypoint(n1)
+	g.Go()
+
+	state := g.State()
+	assert.Equal("named_node", state.NodeState(n1).Get("name"))
+
+}
