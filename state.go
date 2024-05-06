@@ -3,6 +3,14 @@ package goraff
 // State manages the state of all nodes in the graph
 type State struct {
 	nodeStates []*NodeState
+	OnUpdate   func(s *StateReadOnly)
+}
+
+func (s *State) onUpdate() {
+	if s.OnUpdate == nil {
+		return
+	}
+	s.OnUpdate(s.ReadOnly())
 }
 
 func (s *State) NodeStateUpsert(id string) *NodeState {
@@ -12,7 +20,7 @@ func (s *State) NodeStateUpsert(id string) *NodeState {
 		return ns
 	}
 	// Else create a new node state
-	ns = &NodeState{nodeID: id}
+	ns = &NodeState{nodeID: id, onUpdate: s.onUpdate}
 	s.nodeStates = append(s.nodeStates, ns)
 	return ns
 }
@@ -44,11 +52,21 @@ func (s *StateReadOnly) NodeState(id string) *NodeStateReadOnly {
 	return &NodeStateReadOnly{r}
 }
 
+func (s *StateReadOnly) Outputs() []NodeOutput {
+	var outputs []NodeOutput
+	for _, ns := range s.state.nodeStates {
+		n := NodeStateReadOnly{ns}
+		outputs = append(outputs, n.Outputs())
+	}
+	return outputs
+}
+
 // Node state represents a key value store for an individual node
 type NodeState struct {
-	nodeID string
-	state  map[string]string
-	done   bool
+	nodeID   string
+	state    map[string]string
+	done     bool
+	onUpdate func()
 }
 
 func (n *NodeState) MarkDone() {
@@ -67,6 +85,9 @@ func (n *NodeState) Set(key, value string) {
 		n.state = make(map[string]string)
 	}
 	n.state[key] = value
+	if n.onUpdate != nil {
+		n.onUpdate()
+	}
 }
 
 func (n *NodeState) ID() string {
@@ -75,17 +96,35 @@ func (n *NodeState) ID() string {
 
 // NodeStateReadOnly is a read only view of a node state
 type NodeStateReadOnly struct {
-	state *NodeState
+	ns *NodeState
 }
 
 func (s *NodeStateReadOnly) Get(key string) string {
-	return s.state.Get(key)
+	return s.ns.Get(key)
 }
 
 func (s *NodeStateReadOnly) ID() string {
-	return s.state.ID()
+	return s.ns.ID()
 }
 
 func (s *NodeStateReadOnly) Done() bool {
-	return s.state.done
+	return s.ns.done
+}
+
+type NodeOutput struct {
+	ID   string          `json:"id"`
+	Vals []NodeOutputVal `json:"vals"`
+}
+
+type NodeOutputVal struct {
+	Name  string `json:"name"`
+	Value string `json:"value"`
+}
+
+func (s *NodeStateReadOnly) Outputs() NodeOutput {
+	output := NodeOutput{ID: s.ID()}
+	for key, value := range s.ns.state {
+		output.Vals = append(output.Vals, NodeOutputVal{Name: key, Value: value})
+	}
+	return output
 }

@@ -36,6 +36,12 @@ func New() *Graph {
 	return &Graph{}
 }
 
+func NewWithState(s *State) *Graph {
+	return &Graph{
+		state: s,
+	}
+}
+
 func (g *Graph) State() *StateReadOnly {
 	return g.state.ReadOnly()
 }

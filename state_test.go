@@ -67,3 +67,68 @@ func TestState_StateReadOnly_ID(t *testing.T) {
 	nr := r.NodeState("node1")
 	assert.Equal("node1", nr.ID())
 }
+
+func TestState_OnUpdate(t *testing.T) {
+	assert := assert.New(t)
+	updated := false
+	s := goraff.State{
+		OnUpdate: func(s *goraff.StateReadOnly) {
+			assert.Equal("value", s.NodeState("node1").Get("key"))
+			updated = true
+		},
+	}
+	n := s.NodeStateUpsert("node1")
+	assert.False(updated)
+	n.Set("key", "value")
+	assert.True(updated)
+}
+
+func TestStateReadOnly_Outputs(t *testing.T) {
+	assert := assert.New(t)
+	s := goraff.State{}
+	n := s.NodeStateUpsert("node1")
+	n.Set("key1", "value1")
+	n.Set("key2", "value2")
+	n2 := s.NodeStateUpsert("node2")
+	n2.Set("key1", "value1")
+	n2.Set("key2", "value2")
+	r := s.ReadOnly()
+	outputs := r.Outputs()
+	want := []goraff.NodeOutput{
+		{ID: "node1",
+			Vals: []goraff.NodeOutputVal{
+				{Name: "key1", Value: "value1"},
+				{Name: "key2", Value: "value2"},
+			},
+		},
+		{ID: "node2",
+			Vals: []goraff.NodeOutputVal{
+				{Name: "key1", Value: "value1"},
+				{Name: "key2", Value: "value2"},
+			},
+		},
+	}
+	assert.Len(outputs, 2)
+	assert.ElementsMatch(want, outputs)
+
+	// change a value
+	n.Set("key1", "valueNEW")
+
+	want = []goraff.NodeOutput{
+		{ID: "node1",
+			Vals: []goraff.NodeOutputVal{
+				{Name: "key1", Value: "valueNEW"},
+				{Name: "key2", Value: "value2"},
+			},
+		},
+		{ID: "node2",
+			Vals: []goraff.NodeOutputVal{
+				{Name: "key1", Value: "value1"},
+				{Name: "key2", Value: "value2"},
+			},
+		},
+	}
+
+	outputs = r.Outputs()
+	assert.ElementsMatch(want, outputs)
+}
