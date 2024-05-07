@@ -59,17 +59,17 @@ func (a *actionMock) Do(s *goraff.NodeState, r *goraff.StateReadOnly, triggering
 	// Set the key to the name of the action
 	key := fmt.Sprintf("%s_key", a.name)
 	if a.lastName == "" {
-		s.Set(key, a.name)
+		s.SetStr(key, a.name)
 		return nil
 	}
 	ls := r.NodeState(triggeringNodeID)
 	lastKey := fmt.Sprintf("%s_key", a.lastName)
-	lastVal := ls.Get(lastKey)
+	lastVal := ls.GetStr(lastKey)
 	// split string on " :: " and take the last element
 	parts := strings.Split(lastVal, " :: ")
 	lastVal = parts[len(parts)-1]
 	val := fmt.Sprintf("%s :: %s", lastVal, a.name)
-	s.Set(key, val)
+	s.SetStr(key, val)
 	return nil
 }
 
@@ -85,7 +85,7 @@ func TestGraph_Go_NoEdges(t *testing.T) {
 	g.Go()
 
 	state := g.State()
-	assert.Equal("action1", state.NodeState(n1).Get("action1_key"))
+	assert.Equal("action1", state.NodeState(n1).GetStr("action1_key"))
 	assert.Nil(state.NodeState(n2)) // Action 2 should not have run
 }
 
@@ -127,10 +127,10 @@ func TestGraph_Go_WithEdges(t *testing.T) {
 	g.Go()
 
 	state := g.State()
-	assert.Equal("action1", state.NodeState(n1).Get("action1_key"))
-	assert.Equal("action1 :: action2", state.NodeState(n2).Get("action2_key"))
-	assert.Equal("action2 :: action3", state.NodeState(n3).Get("action3_key"))
-	assert.Equal("", state.NodeState(n2).Get("action4_key")) // Action 4 should not have run
+	assert.Equal("action1", state.NodeState(n1).GetStr("action1_key"))
+	assert.Equal("action1 :: action2", state.NodeState(n2).GetStr("action2_key"))
+	assert.Equal("action2 :: action3", state.NodeState(n3).GetStr("action3_key"))
+	assert.Equal("", state.NodeState(n2).GetStr("action4_key")) // Action 4 should not have run
 }
 
 func TestGraph_ConditionalEdges(t *testing.T) {
@@ -152,9 +152,9 @@ func TestGraph_ConditionalEdges(t *testing.T) {
 	g.Go()
 
 	state := g.State()
-	assert.Equal("action1", state.NodeState(n1).Get("action1_key"))
+	assert.Equal("action1", state.NodeState(n1).GetStr("action1_key"))
 	assert.Nil(state.NodeState(n2)) // Action 2 should not have run
-	assert.Equal("action1 :: action3", state.NodeState(n3).Get("action3_key"))
+	assert.Equal("action1 :: action3", state.NodeState(n3).GetStr("action3_key"))
 }
 
 func TestGraph_AddEdge_Node1NotFound(t *testing.T) {
@@ -204,10 +204,10 @@ func TestGraph_FanOutNodes_Parallel(t *testing.T) {
 	assert.True(elapsed < 2500*time.Millisecond, "Elapsed time should be less than 2.5 seconds (first node, parallel nodes, and a bit of leeway)")
 
 	state := g.State()
-	assert.Equal("action1", state.NodeState(n1).Get("action1_key"))
-	assert.Equal("action1 :: action2", state.NodeState(n2).Get("action2_key"))
-	assert.Equal("action1 :: action3", state.NodeState(n3).Get("action3_key"))
-	assert.Equal("action1 :: action4", state.NodeState(n4).Get("action4_key"))
+	assert.Equal("action1", state.NodeState(n1).GetStr("action1_key"))
+	assert.Equal("action1 :: action2", state.NodeState(n2).GetStr("action2_key"))
+	assert.Equal("action1 :: action3", state.NodeState(n3).GetStr("action3_key"))
+	assert.Equal("action1 :: action4", state.NodeState(n4).GetStr("action4_key"))
 }
 
 type mockFollowIfWantsDone struct {
@@ -248,9 +248,9 @@ func TestGraph_StateIsMarkedDoneBeforeTriggers(t *testing.T) {
 	g.Go()
 
 	state := g.State()
-	assert.Equal("action1", state.NodeState(n1).Get("action1_key"))
-	assert.Equal("action1 :: action2", state.NodeState(n2).Get("action2_key"))
-	assert.Equal("action2 :: action3", state.NodeState(n3).Get("action3_key"))
+	assert.Equal("action1", state.NodeState(n1).GetStr("action1_key"))
+	assert.Equal("action1 :: action2", state.NodeState(n2).GetStr("action2_key"))
+	assert.Equal("action2 :: action3", state.NodeState(n3).GetStr("action3_key"))
 }
 
 func TestGraph_EntrypointNotSet(t *testing.T) {
@@ -271,6 +271,6 @@ func TestNode_RunningSetsName(t *testing.T) {
 	g.Go()
 
 	state := g.State()
-	assert.Equal("named_node", state.NodeState(n1).Get("name"))
+	assert.Equal("named_node", state.NodeState(n1).GetStr("name"))
 
 }

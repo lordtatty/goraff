@@ -27,7 +27,7 @@ type followIfKeyMatches struct {
 }
 
 func (e *followIfKeyMatches) Match(s *StateReadOnly) bool {
-	return s.NodeState(e.NodeID).Get(e.Key) == e.Value
+	return s.NodeState(e.NodeID).GetStr(e.Key) == e.Value
 }
 
 func FollowIfKeyMatches(nodeID, key, value string) FollowIf {

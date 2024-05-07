@@ -33,6 +33,8 @@ type Graph struct {
 	entrypoint *Node
 	state      *State
 	edges      map[string][]*Edge
+	outNode    string
+	outKey     string
 }
 
 func New() *Graph {
@@ -43,6 +45,19 @@ func NewWithState(s *State) *Graph {
 	return &Graph{
 		state: s,
 	}
+}
+
+func (g *Graph) OuputKey(nodeID string, key string) {
+	g.outNode = nodeID
+	g.outKey = key
+}
+
+func (g *Graph) Output() string {
+	s := g.State().NodeState(g.outNode)
+	if s == nil {
+		return ""
+	}
+	return s.GetStr(g.outKey)
 }
 
 func (g *Graph) State() *StateReadOnly {
@@ -175,7 +190,7 @@ func (g *Graph) flowMgr() error {
 
 func (g *Graph) runNode(n *Node, triggeringNodeID string) ([]*Node, error) {
 	s := g.state.NodeStateUpsert(n.ID())
-	s.Set("name", n.Name)
+	s.SetStr("name", n.Name)
 	r := g.state.ReadOnly()
 	err := n.Action.Do(s, r, triggeringNodeID)
 	if err != nil {

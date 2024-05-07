@@ -70,7 +70,7 @@ func (s *StateReadOnly) Outputs() []NodeOutput {
 // Node state represents a key value store for an individual node
 type NodeState struct {
 	nodeID   string
-	state    map[string]string
+	state    map[string][]byte
 	done     bool
 	onUpdate func()
 }
@@ -79,21 +79,29 @@ func (n *NodeState) MarkDone() {
 	n.done = true
 }
 
-func (n *NodeState) Get(key string) string {
+func (n *NodeState) Get(key string) []byte {
 	if n.state == nil {
-		return ""
+		return []byte{}
 	}
 	return n.state[key]
 }
 
-func (n *NodeState) Set(key, value string) {
+func (n *NodeState) Set(key string, value []byte) {
 	if n.state == nil {
-		n.state = make(map[string]string)
+		n.state = make(map[string][]byte)
 	}
 	n.state[key] = value
 	if n.onUpdate != nil {
 		n.onUpdate()
 	}
+}
+
+func (n *NodeState) SetStr(key, value string) {
+	n.Set(key, []byte(value))
+}
+
+func (n *NodeState) GetStr(key string) string {
+	return string(n.Get(key))
 }
 
 func (n *NodeState) ID() string {
@@ -105,8 +113,12 @@ type NodeStateReadOnly struct {
 	ns *NodeState
 }
 
-func (s *NodeStateReadOnly) Get(key string) string {
+func (s *NodeStateReadOnly) Get(key string) []byte {
 	return s.ns.Get(key)
+}
+
+func (s *NodeStateReadOnly) GetStr(key string) string {
+	return s.ns.GetStr(key)
 }
 
 func (s *NodeStateReadOnly) ID() string {
@@ -130,7 +142,7 @@ type NodeOutputVal struct {
 func (s *NodeStateReadOnly) Outputs() NodeOutput {
 	output := NodeOutput{ID: s.ID()}
 	for key, value := range s.ns.state {
-		output.Vals = append(output.Vals, NodeOutputVal{Name: key, Value: value})
+		output.Vals = append(output.Vals, NodeOutputVal{Name: key, Value: string(value)})
 	}
 	return output
 }

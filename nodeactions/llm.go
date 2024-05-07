@@ -31,7 +31,7 @@ func (l *LLM) Do(s *goraff.NodeState, r *goraff.StateReadOnly, triggeringNodeID 
 	result := ""
 	for r := range streamCh {
 		result += r
-		s.Set("result", result)
+		s.SetStr("result", result)
 	}
 	if err != nil {
 		return fmt.Errorf("failed to chat: %w", err)
@@ -42,8 +42,8 @@ func (l *LLM) Do(s *goraff.NodeState, r *goraff.StateReadOnly, triggeringNodeID 
 func (l *LLM) buildIncludes(r *goraff.StateReadOnly) string {
 	result := ""
 	for _, output := range l.IncludeOutputs {
-		wants := r.NodeState(output).Get("result")
-		name := r.NodeState(output).Get("name")
+		wants := r.NodeState(output).GetStr("result")
+		name := r.NodeState(output).GetStr("name")
 		wantStr := fmt.Sprintf("NAME: %s", name)
 		resultStr := fmt.Sprintf("RESULT: %s", wants)
 		result += fmt.Sprintf("### OUTPUT BLOCK START###\n%s\n%s\n### OUTPUT BLOCK END###\n", wantStr, resultStr)
