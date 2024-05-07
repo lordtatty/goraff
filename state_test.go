@@ -134,3 +134,16 @@ func TestStateReadOnly_Outputs(t *testing.T) {
 	outputs = r.Outputs()
 	assert.ElementsMatch(want, outputs)
 }
+
+func TestNodeState_SubState(t *testing.T) {
+	assert := assert.New(t)
+	n := &goraff.NodeState{}
+	s := &goraff.State{}
+	n.SetSubState(s)
+
+	sn := s.NodeStateUpsert("subnode")
+	sn.SetStr("key1", "value1")
+
+	assert.Equal("value1", n.SubState().NodeState("subnode").GetStr("key1"))
+
+}

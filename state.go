@@ -73,6 +73,15 @@ type NodeState struct {
 	state    map[string][]byte
 	done     bool
 	onUpdate func()
+	subState *State
+}
+
+func (n *NodeState) SetSubState(s *State) {
+	n.subState = s
+}
+
+func (n *NodeState) SubState() *State {
+	return n.subState
 }
 
 func (n *NodeState) MarkDone() {
