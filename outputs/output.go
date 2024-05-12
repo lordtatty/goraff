@@ -1,6 +1,12 @@
 package outputs
 
-import "github.com/lordtatty/goraff"
+import (
+	"encoding/json"
+	"fmt"
+
+	"github.com/lordtatty/goraff"
+	"github.com/lordtatty/goraff/websocket"
+)
 
 type NodeOutput struct {
 	ID         string          `json:"id"`
@@ -93,4 +99,31 @@ func (o *Outputter) node(ns *goraff.StateNodeReader) *NodeOutput {
 		Vals:       vals,
 		SubStateID: subID,
 	}
+}
+
+// TODO - test this
+func BroadcastChanges(g *goraff.Graph, ws *websocket.WebSocketServer) {
+	g.State().AddOnUpdate(func(s *goraff.GraphStateReader) {
+		out := Outputter{}
+		o := out.Output(s)
+		snd, err := json.Marshal(o)
+		if err != nil {
+			fmt.Println("error marshalling state")
+			return
+		}
+		ws.Send(string(snd))
+	})
+}
+
+// TODOD - test this
+func PrintUpdatesToConsole(g *goraff.Graph) {
+	g.State().AddOnUpdate(func(s *goraff.GraphStateReader) {
+		out := Outputter{}
+		o := out.Output(s)
+		fmt.Println("##########################################")
+		fmt.Println("##########################################")
+		fmt.Println("##########################################")
+		b, _ := json.MarshalIndent(o, "", "  ")
+		fmt.Println(string(b))
+	})
 }
