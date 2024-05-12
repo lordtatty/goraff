@@ -20,18 +20,18 @@ func (e *Edge) TriggersMet(s *StateReadOnly) bool {
 	return e.Condition.Match(s)
 }
 
-type followIfKeyMatches struct {
-	NodeID string
-	Key    string
-	Value  string
+type followIfKeyMatchesName struct {
+	Name  string
+	Key   string
+	Value string
 }
 
-func (e *followIfKeyMatches) Match(s *StateReadOnly) bool {
-	return s.NodeState(e.NodeID).GetStr(e.Key) == e.Value
+func (e *followIfKeyMatchesName) Match(s *StateReadOnly) bool {
+	return s.state.FirstNodeStateByName(e.Name).Reader().GetStr(e.Key) == e.Value
 }
 
 func FollowIfKeyMatches(nodeID, key, value string) FollowIf {
-	return &followIfKeyMatches{NodeID: nodeID, Key: key, Value: value}
+	return &followIfKeyMatchesName{Name: nodeID, Key: key, Value: value}
 }
 
 type followIfNodesCompleted struct {
@@ -40,7 +40,7 @@ type followIfNodesCompleted struct {
 
 func (e *followIfNodesCompleted) Match(s *StateReadOnly) bool {
 	for _, nodeID := range e.NodeIDs {
-		st := s.NodeState(nodeID)
+		st := s.FirstNodeStateByName(nodeID)
 		if st == nil {
 			return false
 		}

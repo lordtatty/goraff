@@ -13,8 +13,8 @@ func TestEdgeCondition_KeyMatches(t *testing.T) {
 	edge := &goraff.Edge{}
 	edge.Condition = sut
 	state := &goraff.State{}
-	state.NodeStateUpsert("node1").SetStr("key1", "value1")
-	assert.True(edge.TriggersMet(state.ReadOnly()))
+	state.NewNodeState("node1").SetStr("key1", "value1")
+	assert.True(edge.TriggersMet(state.Reader()))
 }
 
 func TestEdgeCondition_KeyMatches_Fails(t *testing.T) {
@@ -23,8 +23,8 @@ func TestEdgeCondition_KeyMatches_Fails(t *testing.T) {
 	edge := &goraff.Edge{}
 	edge.Condition = sut
 	state := &goraff.State{}
-	state.NodeStateUpsert("node1").SetStr("key1", "value2")
-	assert.False(edge.TriggersMet(state.ReadOnly()))
+	state.NewNodeState("node1").SetStr("key1", "value2")
+	assert.False(edge.TriggersMet(state.Reader()))
 }
 
 func TestEdgeCondition_NodesCompleted(t *testing.T) {
@@ -33,9 +33,9 @@ func TestEdgeCondition_NodesCompleted(t *testing.T) {
 	edge := &goraff.Edge{}
 	edge.Condition = sut
 	state := &goraff.State{}
-	state.NodeStateUpsert("node1").MarkDone()
-	state.NodeStateUpsert("node2").MarkDone()
-	assert.True(edge.TriggersMet(state.ReadOnly()))
+	state.NewNodeState("node1").MarkDone()
+	state.NewNodeState("node2").MarkDone()
+	assert.True(edge.TriggersMet(state.Reader()))
 }
 
 func TestEdgeCondition_NodesCompleted_Fails(t *testing.T) {
@@ -44,9 +44,9 @@ func TestEdgeCondition_NodesCompleted_Fails(t *testing.T) {
 	edge := &goraff.Edge{}
 	edge.Condition = sut
 	state := &goraff.State{}
-	state.NodeStateUpsert("node1").MarkDone()
-	state.NodeStateUpsert("node2") // not marked done
-	assert.False(edge.TriggersMet(state.ReadOnly()))
+	state.NewNodeState("node1").MarkDone()
+	state.NewNodeState("node2") // not marked done
+	assert.False(edge.TriggersMet(state.Reader()))
 }
 
 func TestEdgeCondition_NodesCompleted_NodeStateIsNil(t *testing.T) {
@@ -56,5 +56,5 @@ func TestEdgeCondition_NodesCompleted_NodeStateIsNil(t *testing.T) {
 	edge.Condition = sut
 	state := &goraff.State{}
 	// No nodes upserted
-	assert.False(edge.TriggersMet(state.ReadOnly()))
+	assert.False(edge.TriggersMet(state.Reader()))
 }

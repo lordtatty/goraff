@@ -53,15 +53,15 @@ func TestLLM_Do(t *testing.T) {
 				fmt.Println("===")
 				msgIdx++
 				want := strings.Join(expectedMessages[:msgIdx], "")
-				assert.Equal(want, s.NodeState("node1").GetStr("result"))
+				assert.Equal(want, s.FirstNodeStateByName("node1").GetStr("result"))
 			},
 		},
 	}
-	n := s.NodeStateUpsert("node1")
+	n := s.NewNodeState("node1")
 	r := &goraff.StateReadOnly{}
 
-	err := sut.Do(n, r, "")
+	err := sut.Do(n, r, nil)
 	assert.NoError(err)
 	assert.Equal(msgIdx, len(expectedMessages))
-	assert.Equal(expectedResult, n.GetStr("result"))
+	assert.Equal(expectedResult, n.Reader().GetStr("result"))
 }

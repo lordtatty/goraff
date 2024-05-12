@@ -17,7 +17,7 @@ type LLM struct {
 	IncludeOutputs []string
 }
 
-func (l *LLM) Do(s *goraff.NodeState, r *goraff.StateReadOnly, triggeringNodeID string) error {
+func (l *LLM) Do(s *goraff.NodeState, r *goraff.StateReadOnly, triggeringNode *goraff.NodeState) error {
 	fmt.Println("Running LLM Node")
 	msg := l.buildIncludes(r)
 	msg = msg + "\n\n" + l.UserMsg
@@ -42,8 +42,8 @@ func (l *LLM) Do(s *goraff.NodeState, r *goraff.StateReadOnly, triggeringNodeID 
 func (l *LLM) buildIncludes(r *goraff.StateReadOnly) string {
 	result := ""
 	for _, output := range l.IncludeOutputs {
-		wants := r.NodeState(output).GetStr("result")
-		name := r.NodeState(output).GetStr("name")
+		wants := r.FirstNodeStateByName(output).GetStr("result")
+		name := r.FirstNodeStateByName(output).GetStr("name")
 		wantStr := fmt.Sprintf("NAME: %s", name)
 		resultStr := fmt.Sprintf("RESULT: %s", wants)
 		result += fmt.Sprintf("### OUTPUT BLOCK START###\n%s\n%s\n### OUTPUT BLOCK END###\n", wantStr, resultStr)
