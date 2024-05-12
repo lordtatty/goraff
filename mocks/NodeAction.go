@@ -21,7 +21,7 @@ func (_m *NodeAction) EXPECT() *NodeAction_Expecter {
 }
 
 // Do provides a mock function with given fields: s, r, triggeringNodeID
-func (_m *NodeAction) Do(s *goraff.NodeState, r *goraff.StateReadOnly, triggeringNodeID string) error {
+func (_m *NodeAction) Do(s *goraff.StateNode, r *goraff.StateReadOnly, triggeringNodeID string) error {
 	ret := _m.Called(s, r, triggeringNodeID)
 
 	if len(ret) == 0 {
@@ -29,7 +29,7 @@ func (_m *NodeAction) Do(s *goraff.NodeState, r *goraff.StateReadOnly, triggerin
 	}
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(*goraff.NodeState, *goraff.StateReadOnly, string) error); ok {
+	if rf, ok := ret.Get(0).(func(*goraff.StateNode, *goraff.StateReadOnly, string) error); ok {
 		r0 = rf(s, r, triggeringNodeID)
 	} else {
 		r0 = ret.Error(0)
@@ -51,9 +51,9 @@ func (_e *NodeAction_Expecter) Do(s interface{}, r interface{}, triggeringNodeID
 	return &NodeAction_Do_Call{Call: _e.mock.On("Do", s, r, triggeringNodeID)}
 }
 
-func (_c *NodeAction_Do_Call) Run(run func(s *goraff.NodeState, r *goraff.StateReadOnly, triggeringNodeID string)) *NodeAction_Do_Call {
+func (_c *NodeAction_Do_Call) Run(run func(s *goraff.StateNode, r *goraff.StateReadOnly, triggeringNodeID string)) *NodeAction_Do_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(*goraff.NodeState), args[1].(*goraff.StateReadOnly), args[2].(string))
+		run(args[0].(*goraff.StateNode), args[1].(*goraff.StateReadOnly), args[2].(string))
 	})
 	return _c
 }
@@ -63,7 +63,7 @@ func (_c *NodeAction_Do_Call) Return(_a0 error) *NodeAction_Do_Call {
 	return _c
 }
 
-func (_c *NodeAction_Do_Call) RunAndReturn(run func(*goraff.NodeState, *goraff.StateReadOnly, string) error) *NodeAction_Do_Call {
+func (_c *NodeAction_Do_Call) RunAndReturn(run func(*goraff.StateNode, *goraff.StateReadOnly, string) error) *NodeAction_Do_Call {
 	_c.Call.Return(run)
 	return _c
 }

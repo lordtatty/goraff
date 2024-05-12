@@ -10,7 +10,7 @@ import (
 )
 
 type NodeAction interface {
-	Do(s *NodeState, r *StateReadOnly, triggeringNS *NodeState) error
+	Do(s *StateNode, r *StateReadOnly, triggeringNS *StateNode) error
 }
 
 // Node represents a node in the graph
@@ -144,7 +144,7 @@ func (g *Graph) Go() error {
 
 type nextNode struct {
 	Node         *Node
-	triggeringNS *NodeState
+	triggeringNS *StateNode
 }
 
 func (g *Graph) flowMgr() error {
@@ -197,7 +197,7 @@ func (g *Graph) flowMgr() error {
 	return foundErr
 }
 
-func (g *Graph) runNode(n *Node, triggeringNS *NodeState) ([]*Node, *NodeState, error) {
+func (g *Graph) runNode(n *Node, triggeringNS *StateNode) ([]*Node, *StateNode, error) {
 	s := g.state.NewNodeState(n.Name)
 	s.SetStr("name", n.Name)
 	r := g.state.Reader()

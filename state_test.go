@@ -9,7 +9,7 @@ import (
 
 func TestNodeState(t *testing.T) {
 	assert := assert.New(t)
-	n := goraff.NodeState{}
+	n := goraff.StateNode{}
 	n.SetStr("key1", "value1")
 	n.SetStr("key2", "value2")
 	r := n.Reader()
@@ -23,13 +23,13 @@ func TestNodeState(t *testing.T) {
 
 func TestNodeState_GetOnUninitialisedState(t *testing.T) {
 	assert := assert.New(t)
-	n := goraff.NodeState{}
+	n := goraff.StateNode{}
 	assert.Equal("", n.Reader().GetStr("key1"))
 }
 
 func TestNodeState_ID(t *testing.T) {
 	assert := assert.New(t)
-	n := goraff.NodeState{}
+	n := goraff.StateNode{}
 	assert.Regexp("^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$", n.Reader().ID())
 }
 
@@ -113,66 +113,4 @@ func TestState_OnUpdate(t *testing.T) {
 	assert.False(updated)
 	n.SetStr("key", "value")
 	assert.True(updated)
-}
-
-// func TestStateReadOnly_Outputs(t *testing.T) {
-// 	assert := assert.New(t)
-// 	s := goraff.State{}
-// 	n := s.NodeStateUpsert("node1")
-// 	n.SetStr("key1", "value1")
-// 	n.SetStr("key2", "value2")
-// 	n2 := s.NodeStateUpsert("node2")
-// 	n2.SetStr("key1", "value1")
-// 	n2.SetStr("key2", "value2")
-// 	r := s.ReadOnly()
-// 	outputs := r.Outputs()
-// 	want := []goraff.NodeOutput{
-// 		{ID: "node1",
-// 			Vals: []goraff.NodeOutputVal{
-// 				{Name: "key1", Value: "value1"},
-// 				{Name: "key2", Value: "value2"},
-// 			},
-// 		},
-// 		{ID: "node2",
-// 			Vals: []goraff.NodeOutputVal{
-// 				{Name: "key1", Value: "value1"},
-// 				{Name: "key2", Value: "value2"},
-// 			},
-// 		},
-// 	}
-// 	assert.Len(outputs, 2)
-// 	assert.ElementsMatch(want, outputs)
-
-// 	// change a value
-// 	n.SetStr("key1", "valueNEW")
-
-// 	want = []goraff.NodeOutput{
-// 		{ID: "node1",
-// 			Vals: []goraff.NodeOutputVal{
-// 				{Name: "key1", Value: "valueNEW"},
-// 				{Name: "key2", Value: "value2"},
-// 			},
-// 		},
-// 		{ID: "node2",
-// 			Vals: []goraff.NodeOutputVal{
-// 				{Name: "key1", Value: "value1"},
-// 				{Name: "key2", Value: "value2"},
-// 			},
-// 		},
-// 	}
-
-// 	outputs = r.Outputs()
-// 	assert.ElementsMatch(want, outputs)
-// }
-
-func TestNodeState_SubState(t *testing.T) {
-	assert := assert.New(t)
-	n := &goraff.NodeState{}
-	s := &goraff.State{}
-	n.SetSubState(s)
-
-	sn := s.NewNodeState("subnode")
-	sn.SetStr("key1", "value1")
-
-	assert.Equal("value1", n.SubState().NodeStateByID(sn.Reader().ID()).Reader().GetStr("key1"))
 }

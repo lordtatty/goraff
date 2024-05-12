@@ -1,11 +1,9 @@
 package goraff
 
-import "github.com/google/uuid"
-
 // State manages the state of all nodes in the graph
 type State struct {
 	id         string
-	nodeStates []*NodeState
+	nodeStates []*StateNode
 	OnUpdate   []func(s *StateReadOnly)
 }
 
@@ -22,16 +20,16 @@ func (s *State) onUpdate() {
 	}
 }
 
-func (s *State) NewNodeState(name string) *NodeState {
+func (s *State) NewNodeState(name string) *StateNode {
 	// Else create a new node state
-	ns := &NodeState{name: name, onUpdate: s.onUpdate}
+	ns := &StateNode{name: name, onUpdate: s.onUpdate}
 	s.nodeStates = append(s.nodeStates, ns)
 	return ns
 }
 
-func (s *State) NodeStateByName(name string) []*NodeState {
+func (s *State) NodeStateByName(name string) []*StateNode {
 	// First see if we have this node state
-	result := []*NodeState{}
+	result := []*StateNode{}
 	for _, ns := range s.nodeStates {
 		if ns.name == name {
 			result = append(result, ns)
@@ -40,7 +38,7 @@ func (s *State) NodeStateByName(name string) []*NodeState {
 	return result
 }
 
-func (s *State) FirstNodeStateByName(name string) *NodeState {
+func (s *State) FirstNodeStateByName(name string) *StateNode {
 	// First see if we have this node state
 	for _, ns := range s.nodeStates {
 		if ns.name == name {
@@ -50,7 +48,7 @@ func (s *State) FirstNodeStateByName(name string) *NodeState {
 	return nil
 }
 
-func (s *State) NodeStateByID(id string) *NodeState {
+func (s *State) NodeStateByID(id string) *StateNode {
 	// First see if we have this node state
 	for _, ns := range s.nodeStates {
 		if ns.Reader().ID() == id {
@@ -69,20 +67,20 @@ type StateReadOnly struct {
 	state *State
 }
 
-func (s *StateReadOnly) FirstNodeStateByName(name string) *NodeStateReader {
+func (s *StateReadOnly) FirstNodeStateByName(name string) *StateNodeReader {
 	st := s.state.FirstNodeStateByName(name)
 	if st == nil {
 		return nil
 	}
-	return &NodeStateReader{st}
+	return &StateNodeReader{st}
 }
 
-func (s *StateReadOnly) NodeState(id string) *NodeStateReader {
+func (s *StateReadOnly) NodeState(id string) *StateNodeReader {
 	r := s.state.NodeStateByID(id)
 	if r == nil {
 		return nil
 	}
-	return &NodeStateReader{r}
+	return &StateNodeReader{r}
 }
 
 func (s *StateReadOnly) NodeIDs() []string {
@@ -95,80 +93,4 @@ func (s *StateReadOnly) NodeIDs() []string {
 
 func (s *StateReadOnly) ID() string {
 	return s.state.id
-}
-
-// Node state represents a key value store for an individual node
-type NodeState struct {
-	id       string
-	name     string
-	state    map[string][]byte
-	done     bool
-	onUpdate func()
-	subState *State
-}
-
-func (n *NodeState) SetSubState(s *State) {
-	s.AddOnUpdate(func(s *StateReadOnly) {
-		if n.onUpdate != nil {
-			n.onUpdate()
-		}
-	})
-	n.subState = s
-}
-
-func (n *NodeState) SubState() *State {
-	return n.subState
-}
-
-func (n *NodeState) MarkDone() {
-	n.done = true
-}
-
-func (n *NodeState) Set(key string, value []byte) {
-	if n.state == nil {
-		n.state = make(map[string][]byte)
-	}
-	n.state[key] = value
-	if n.onUpdate != nil {
-		n.onUpdate()
-	}
-}
-
-func (n *NodeState) SetStr(key, value string) {
-	n.Set(key, []byte(value))
-}
-
-func (n *NodeState) Reader() *NodeStateReader {
-	return &NodeStateReader{n}
-}
-
-// NodeStateReader is a read only view of a node state
-type NodeStateReader struct {
-	ns *NodeState
-}
-
-func (s *NodeStateReader) Get(key string) []byte {
-	if s.ns.state == nil {
-		return []byte{}
-	}
-	return s.ns.state[key]
-}
-
-func (s *NodeStateReader) GetStr(key string) string {
-	return string(s.Get(key))
-}
-
-func (s *NodeStateReader) ID() string {
-	if s.ns.id == "" {
-		s.ns.id = uuid.NewString()
-	}
-	return s.ns.id
-}
-
-func (s *NodeStateReader) Name() string {
-	return s.ns.name
-}
-
-func (s *NodeStateReader) Done() bool {
-	return s.ns.done
 }

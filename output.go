@@ -76,7 +76,7 @@ func (o *Outputter) allNodes(s *StateReadOnly) []NodeOutput {
 	return nodes
 }
 
-func (o *Outputter) node(ns *NodeStateReader) *NodeOutput {
+func (o *Outputter) node(ns *StateNodeReader) *NodeOutput {
 	vals := []NodeOutputVal{}
 	for k, v := range ns.ns.state {
 		vals = append(vals, NodeOutputVal{Name: k, Value: string(v)})

@@ -17,7 +17,7 @@ type LLM struct {
 	IncludeOutputs []string
 }
 
-func (l *LLM) Do(s *goraff.NodeState, r *goraff.StateReadOnly, triggeringNode *goraff.NodeState) error {
+func (l *LLM) Do(s *goraff.StateNode, r *goraff.StateReadOnly, triggeringNode *goraff.StateNode) error {
 	fmt.Println("Running LLM Node")
 	msg := l.buildIncludes(r)
 	msg = msg + "\n\n" + l.UserMsg

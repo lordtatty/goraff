@@ -9,7 +9,7 @@ import (
 type Print struct {
 }
 
-func (p *Print) Do(s *goraff.NodeState, r *goraff.StateReadOnly, triggeringNode *goraff.NodeState) error {
+func (p *Print) Do(s *goraff.StateNode, r *goraff.StateReadOnly, triggeringNode *goraff.StateNode) error {
 	log.Printf("Node triggered by %s\n", triggeringNode.Reader().ID())
 	return nil
 }

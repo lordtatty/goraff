@@ -35,7 +35,7 @@ type actionMock struct {
 	err         error
 }
 
-func (a *actionMock) Do(s *goraff.NodeState, r *goraff.StateReadOnly, triggeringNS *goraff.NodeState) error {
+func (a *actionMock) Do(s *goraff.StateNode, r *goraff.StateReadOnly, triggeringNS *goraff.StateNode) error {
 	if a.expectNoRun {
 		a.t.Error("Action should not have run")
 	}
