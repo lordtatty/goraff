@@ -10,7 +10,7 @@ import (
 )
 
 type NodeAction interface {
-	Do(s *StateNode, r *GraphStateReader, triggeringNS *StateNode) error
+	Do(s *StateNode, r *GraphStateReader, triggeringNS *StateNodeReader) error
 }
 
 // Node represents a node in the graph
@@ -172,7 +172,7 @@ func (g *Graph) flowMgr() error {
 				if foundErr != nil {
 					return
 				}
-				nextNodes, compeltedState, err := g.runNode(n.Node, n.triggeringNS)
+				nextNodes, compeltedState, err := g.runNode(n.Node, n.triggeringNS.Reader())
 				if err != nil {
 					fmt.Println("error running node, letting all nodes drain: ", n.Node.Name)
 					mut.Lock()
@@ -197,7 +197,7 @@ func (g *Graph) flowMgr() error {
 	return foundErr
 }
 
-func (g *Graph) runNode(n *Node, triggeringNS *StateNode) ([]*Node, *StateNode, error) {
+func (g *Graph) runNode(n *Node, triggeringNS *StateNodeReader) ([]*Node, *StateNode, error) {
 	s := g.state.NewNodeState(n.Name)
 	s.SetStr("name", n.Name)
 	r := g.state.Reader()

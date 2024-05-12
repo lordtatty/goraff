@@ -35,7 +35,7 @@ type actionMock struct {
 	err         error
 }
 
-func (a *actionMock) Do(s *goraff.StateNode, r *goraff.GraphStateReader, triggeringNS *goraff.StateNode) error {
+func (a *actionMock) Do(s *goraff.StateNode, r *goraff.GraphStateReader, triggeringNS *goraff.StateNodeReader) error {
 	if a.expectNoRun {
 		a.t.Error("Action should not have run")
 	}
@@ -53,7 +53,7 @@ func (a *actionMock) Do(s *goraff.StateNode, r *goraff.GraphStateReader, trigger
 		return nil
 	}
 	lastKey := fmt.Sprintf("%s_key", a.lastName)
-	lastVal := triggeringNS.Reader().GetStr(lastKey)
+	lastVal := triggeringNS.GetStr(lastKey)
 	// split string on " :: " and take the last element
 	parts := strings.Split(lastVal, " :: ")
 	lastVal = parts[len(parts)-1]
