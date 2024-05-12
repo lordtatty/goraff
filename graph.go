@@ -1,12 +1,10 @@
 package goraff
 
 import (
-	"encoding/json"
 	"fmt"
 	"sync"
 
 	"github.com/google/uuid"
-	"github.com/lordtatty/goraff/websocket"
 )
 
 type NodeAction interface {
@@ -194,33 +192,33 @@ func (g *Graph) runNode(n *Node, triggeringNS *StateNodeReader) ([]*Node, *State
 	return nextNodes, s, nil
 }
 
-func (g *Graph) BroadcastChanges(ws *websocket.WebSocketServer) {
-	if g.state == nil {
-		g.state = &StateGraph{}
-	}
-	g.state.AddOnUpdate(func(s *GraphStateReader) {
-		out := Outputter{}
-		o := out.Output(s)
-		snd, err := json.Marshal(o)
-		if err != nil {
-			fmt.Println("error marshalling state")
-			return
-		}
-		ws.Send(string(snd))
-	})
-}
+// func (g *Graph) BroadcastChanges(ws *websocket.WebSocketServer) {
+// 	if g.state == nil {
+// 		g.state = &StateGraph{}
+// 	}
+// 	g.state.AddOnUpdate(func(s *GraphStateReader) {
+// 		out := Outputter{}
+// 		o := out.Output(s)
+// 		snd, err := json.Marshal(o)
+// 		if err != nil {
+// 			fmt.Println("error marshalling state")
+// 			return
+// 		}
+// 		ws.Send(string(snd))
+// 	})
+// }
 
-func (g *Graph) PrintUpdatesToConsole() {
-	if g.state == nil {
-		g.state = &StateGraph{}
-	}
-	g.state.AddOnUpdate(func(s *GraphStateReader) {
-		out := Outputter{}
-		o := out.Output(s)
-		fmt.Println("##########################################")
-		fmt.Println("##########################################")
-		fmt.Println("##########################################")
-		b, _ := json.MarshalIndent(o, "", "  ")
-		fmt.Println(string(b))
-	})
-}
+// func (g *Graph) PrintUpdatesToConsole() {
+// 	if g.state == nil {
+// 		g.state = &StateGraph{}
+// 	}
+// 	g.state.AddOnUpdate(func(s *GraphStateReader) {
+// 		out := Outputter{}
+// 		o := out.Output(s)
+// 		fmt.Println("##########################################")
+// 		fmt.Println("##########################################")
+// 		fmt.Println("##########################################")
+// 		b, _ := json.MarshalIndent(o, "", "  ")
+// 		fmt.Println(string(b))
+// 	})
+// }

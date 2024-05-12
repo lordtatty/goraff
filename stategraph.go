@@ -67,6 +67,14 @@ type GraphStateReader struct {
 	state *StateGraph
 }
 
+func (s *GraphStateReader) NodeStateByID(id string) *StateNodeReader {
+	r := s.state.NodeStateByID(id)
+	if r == nil {
+		return nil
+	}
+	return &StateNodeReader{r}
+}
+
 func (s *GraphStateReader) FirstNodeStateByName(name string) *StateNodeReader {
 	st := s.state.FirstNodeStateByName(name)
 	if st == nil {

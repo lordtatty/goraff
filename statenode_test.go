@@ -11,12 +11,14 @@ func TestNodeState_SubState(t *testing.T) {
 	assert := assert.New(t)
 	n := &goraff.StateNode{}
 	s := &goraff.StateGraph{}
-	n.SetSubState(s)
+	n.SetSubGraph(s)
 
 	sn := s.NewNodeState("subnode")
 	sn.SetStr("key1", "value1")
 
-	assert.Equal("value1", n.SubState().NodeStateByID(sn.Reader().ID()).Reader().GetStr("key1"))
+	subGraph := n.Reader().SubGraph()
+	node := subGraph.NodeStateByID(sn.Reader().ID())
+	assert.Equal("value1", node.GetStr("key1"))
 }
 
 func TestStateNode_Reader(t *testing.T) {

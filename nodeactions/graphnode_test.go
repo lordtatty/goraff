@@ -27,7 +27,8 @@ func TestGraphNode_Do(t *testing.T) {
 	err := graph.Go()
 	assert.Nil(err)
 
-	retrieved := graph.State().FirstNodeStateByName(n1).SubState()
-	assert.Equal(substate, retrieved)
-	assert.Equal("value1", retrieved.FirstNodeStateByName(input1).Reader().GetStr("result"))
+	node := graph.State().FirstNodeStateByName(n1)
+	sub := node.Reader().SubGraph()
+	assert.Equal(substate.Reader(), sub)
+	assert.Equal("value1", sub.FirstNodeStateByName(input1).GetStr("result"))
 }

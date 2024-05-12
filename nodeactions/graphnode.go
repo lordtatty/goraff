@@ -13,7 +13,7 @@ type GraphNode struct {
 func (g *GraphNode) Do(s *goraff.StateNode, r *goraff.GraphStateReader, triggeringNS *goraff.StateNodeReader) error {
 	fmt.Println("Running Graph Node")
 	sub := g.Graph.State()
-	s.SetSubState(sub)
+	s.SetSubGraph(sub)
 	g.Graph.Go()
 	return nil
 }

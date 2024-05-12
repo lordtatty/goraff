@@ -9,20 +9,16 @@ type StateNode struct {
 	state    map[string][]byte
 	done     bool
 	onUpdate func()
-	subState *StateGraph
+	subGraph *StateGraph
 }
 
-func (n *StateNode) SetSubState(s *StateGraph) {
+func (n *StateNode) SetSubGraph(s *StateGraph) {
 	s.AddOnUpdate(func(s *GraphStateReader) {
 		if n.onUpdate != nil {
 			n.onUpdate()
 		}
 	})
-	n.subState = s
-}
-
-func (n *StateNode) SubState() *StateGraph {
-	return n.subState
+	n.subGraph = s
 }
 
 func (n *StateNode) MarkDone() {
@@ -53,6 +49,17 @@ func (n *StateNode) Reader() *StateNodeReader {
 // StateNodeReader is a read only view of a node state
 type StateNodeReader struct {
 	ns *StateNode
+}
+
+func (n *StateNodeReader) State() map[string][]byte {
+	return n.ns.state
+}
+
+func (n *StateNodeReader) SubGraph() *GraphStateReader {
+	if n.ns.subGraph == nil {
+		return nil
+	}
+	return &GraphStateReader{n.ns.subGraph}
 }
 
 func (s *StateNodeReader) Get(key string) []byte {

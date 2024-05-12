@@ -1,9 +1,10 @@
-package goraff_test
+package outputs_test
 
 import (
 	"testing"
 
 	"github.com/lordtatty/goraff"
+	"github.com/lordtatty/goraff/outputs"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -16,16 +17,16 @@ func TestOutputter(t *testing.T) {
 	s := goraff.StateGraph{}
 	n1 := s.NewNodeState("node1")
 	n1.SetStr("key2", "value2")
-	n1.SetSubState(substate)
+	n1.SetSubGraph(substate)
 
 	r := s.Reader()
 
-	sut := &goraff.Outputter{}
-	outputs := sut.Output(r)
+	sut := &outputs.Outputter{}
+	result := sut.Output(r)
 
-	want := &goraff.Output{
+	want := &outputs.Output{
 		PrimaryStateID: s.Reader().ID(),
-		States: []goraff.StateOutput{
+		States: []outputs.StateOutput{
 			{
 				ID:      s.Reader().ID(),
 				NodeIDs: []string{n1.Reader().Name()},
@@ -35,11 +36,11 @@ func TestOutputter(t *testing.T) {
 				NodeIDs: []string{subnode.Reader().Name()},
 			},
 		},
-		Nodes: []goraff.NodeOutput{
+		Nodes: []outputs.NodeOutput{
 			{
 				ID:   n1.Reader().ID(),
 				Name: n1.Reader().Name(),
-				Vals: []goraff.NodeOutputVal{
+				Vals: []outputs.NodeOutputVal{
 					{Name: "key2", Value: "value2"},
 				},
 				SubStateID: substate.Reader().ID(),
@@ -47,12 +48,12 @@ func TestOutputter(t *testing.T) {
 			{
 				ID:   subnode.Reader().ID(),
 				Name: subnode.Reader().Name(),
-				Vals: []goraff.NodeOutputVal{
+				Vals: []outputs.NodeOutputVal{
 					{Name: "key1", Value: "value1"},
 				},
 				SubStateID: "",
 			},
 		},
 	}
-	assert.Equal(want, outputs)
+	assert.Equal(want, result)
 }

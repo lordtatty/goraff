@@ -1,4 +1,6 @@
-package goraff
+package outputs
+
+import "github.com/lordtatty/goraff"
 
 type NodeOutput struct {
 	ID         string          `json:"id"`
@@ -26,7 +28,7 @@ type StateOutput struct {
 type Outputter struct {
 }
 
-func (o *Outputter) Output(s *GraphStateReader) *Output {
+func (o *Outputter) Output(s *goraff.GraphStateReader) *Output {
 	out := &Output{
 		PrimaryStateID: s.ID(),
 		States:         o.allStates(s),
@@ -35,22 +37,22 @@ func (o *Outputter) Output(s *GraphStateReader) *Output {
 	return out
 }
 
-func (o *Outputter) allStates(s *GraphStateReader) []StateOutput {
+func (o *Outputter) allStates(s *goraff.GraphStateReader) []StateOutput {
 	states := []StateOutput{
 		*o.state(s),
 	}
 	for _, ns := range s.NodeIDs() {
 		n := s.NodeState(ns)
-		if n.ns.subState == nil {
+		if n.SubGraph() == nil {
 			continue
 		}
-		a := o.allStates(n.ns.subState.Reader())
+		a := o.allStates(n.SubGraph())
 		states = append(states, a...)
 	}
 	return states
 }
 
-func (o *Outputter) state(s *GraphStateReader) *StateOutput {
+func (o *Outputter) state(s *goraff.GraphStateReader) *StateOutput {
 	nodeIDs := []string{}
 	for _, ns := range s.NodeIDs() {
 		n := s.NodeState(ns)
@@ -62,28 +64,28 @@ func (o *Outputter) state(s *GraphStateReader) *StateOutput {
 	}
 }
 
-func (o *Outputter) allNodes(s *GraphStateReader) []NodeOutput {
+func (o *Outputter) allNodes(s *goraff.GraphStateReader) []NodeOutput {
 	nodes := []NodeOutput{}
 	for _, ns := range s.NodeIDs() {
 		n := s.NodeState(ns)
 		nodes = append(nodes, *o.node(n))
-		if n.ns.subState == nil {
+		if n.SubGraph() == nil {
 			continue
 		}
-		a := o.allNodes(n.ns.subState.Reader())
+		a := o.allNodes(n.SubGraph())
 		nodes = append(nodes, a...)
 	}
 	return nodes
 }
 
-func (o *Outputter) node(ns *StateNodeReader) *NodeOutput {
+func (o *Outputter) node(ns *goraff.StateNodeReader) *NodeOutput {
 	vals := []NodeOutputVal{}
-	for k, v := range ns.ns.state {
+	for k, v := range ns.State() {
 		vals = append(vals, NodeOutputVal{Name: k, Value: string(v)})
 	}
 	subID := ""
-	if ns.ns.subState != nil {
-		subID = ns.ns.subState.Reader().ID()
+	if ns.SubGraph() != nil {
+		subID = ns.SubGraph().ID()
 	}
 	return &NodeOutput{
 		ID:         ns.ID(),
