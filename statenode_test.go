@@ -18,3 +18,10 @@ func TestNodeState_SubState(t *testing.T) {
 
 	assert.Equal("value1", n.SubState().NodeStateByID(sn.Reader().ID()).Reader().GetStr("key1"))
 }
+
+func TestStateNode_Reader(t *testing.T) {
+	assert := assert.New(t)
+	n := &goraff.StateNode{}
+	r := n.Reader()
+	assert.Equal(n.Reader().ID(), r.ID())
+}
