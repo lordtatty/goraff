@@ -15,17 +15,9 @@ type NodeAction interface {
 
 // Node represents a node in the graph
 type Node struct {
-	// id     string
 	Action NodeAction
 	Name   string
 }
-
-// func (n *Node) ID() string {
-// 	if n.id == "" {
-// 		n.id = uuid.New().String()
-// 	}
-// 	return n.id
-// }
 
 // Graph represents a graph of nodes
 type Graph struct {
@@ -33,8 +25,6 @@ type Graph struct {
 	entrypoint *Node
 	state      *GraphState
 	edges      map[string][]*Edge
-	// outNode    string
-	// outKey     string
 }
 
 func New() *Graph {
@@ -46,19 +36,6 @@ func NewWithState(s *GraphState) *Graph {
 		state: s,
 	}
 }
-
-// func (g *Graph) OuputKey(nodeID string, key string) {
-// 	g.outNode = nodeID
-// 	g.outKey = key
-// }
-
-// func (g *Graph) Output() string {
-// 	s := g.State().NodeStateByName(g.outNode)
-// 	if s == nil {
-// 		return ""
-// 	}
-// 	return s.Reader().GetStr(g.outKey)
-// }
 
 func (g *Graph) StateReadOnly() *GraphStateReader {
 	if g.state == nil {
