@@ -35,7 +35,7 @@ type actionMock struct {
 	err         error
 }
 
-func (a *actionMock) Do(s *goraff.StateNode, r *goraff.StateReadOnly, triggeringNS *goraff.StateNode) error {
+func (a *actionMock) Do(s *goraff.StateNode, r *goraff.GraphStateReader, triggeringNS *goraff.StateNode) error {
 	if a.expectNoRun {
 		a.t.Error("Action should not have run")
 	}
@@ -211,7 +211,7 @@ type mockFollowIfWantsDone struct {
 	t       *testing.T
 }
 
-func (f *mockFollowIfWantsDone) Match(s *goraff.StateReadOnly) bool {
+func (f *mockFollowIfWantsDone) Match(s *goraff.GraphStateReader) bool {
 	assert := assert.New(f.t)
 	for _, nodeID := range f.nodeIDs {
 		st := s.FirstNodeStateByName(nodeID)

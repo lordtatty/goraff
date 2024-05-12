@@ -2,7 +2,7 @@ package goraff
 
 // Condition is a condition that must be met for an edge to be taken
 type FollowIf interface {
-	Match(s *StateReadOnly) bool
+	Match(s *GraphStateReader) bool
 }
 
 // Edge represents an edge in the graph
@@ -12,7 +12,7 @@ type Edge struct {
 	Condition FollowIf
 }
 
-func (e *Edge) TriggersMet(s *StateReadOnly) bool {
+func (e *Edge) TriggersMet(s *GraphStateReader) bool {
 	if e.Condition == nil {
 		// without a conditon, we always follow the edge
 		return true
@@ -26,7 +26,7 @@ type followIfKeyMatchesName struct {
 	Value string
 }
 
-func (e *followIfKeyMatchesName) Match(s *StateReadOnly) bool {
+func (e *followIfKeyMatchesName) Match(s *GraphStateReader) bool {
 	return s.state.FirstNodeStateByName(e.Name).Reader().GetStr(e.Key) == e.Value
 }
 
@@ -38,7 +38,7 @@ type followIfNodesCompleted struct {
 	NodeIDs []string
 }
 
-func (e *followIfNodesCompleted) Match(s *StateReadOnly) bool {
+func (e *followIfNodesCompleted) Match(s *GraphStateReader) bool {
 	for _, nodeID := range e.NodeIDs {
 		st := s.FirstNodeStateByName(nodeID)
 		if st == nil {

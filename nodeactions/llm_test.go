@@ -47,9 +47,9 @@ func TestLLM_Do(t *testing.T) {
 		Client:    mClient,
 	}
 	msgIdx := 0
-	s := &goraff.State{
-		OnUpdate: []func(s *goraff.StateReadOnly){
-			func(s *goraff.StateReadOnly) {
+	s := &goraff.GraphState{
+		OnUpdate: []func(s *goraff.GraphStateReader){
+			func(s *goraff.GraphStateReader) {
 				fmt.Println("===")
 				msgIdx++
 				want := strings.Join(expectedMessages[:msgIdx], "")
@@ -58,7 +58,7 @@ func TestLLM_Do(t *testing.T) {
 		},
 	}
 	n := s.NewNodeState("node1")
-	r := &goraff.StateReadOnly{}
+	r := &goraff.GraphStateReader{}
 
 	err := sut.Do(n, r, nil)
 	assert.NoError(err)

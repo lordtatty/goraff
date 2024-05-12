@@ -9,11 +9,11 @@ type StateNode struct {
 	state    map[string][]byte
 	done     bool
 	onUpdate func()
-	subState *State
+	subState *GraphState
 }
 
-func (n *StateNode) SetSubState(s *State) {
-	s.AddOnUpdate(func(s *StateReadOnly) {
+func (n *StateNode) SetSubState(s *GraphState) {
+	s.AddOnUpdate(func(s *GraphStateReader) {
 		if n.onUpdate != nil {
 			n.onUpdate()
 		}
@@ -21,7 +21,7 @@ func (n *StateNode) SetSubState(s *State) {
 	n.subState = s
 }
 
-func (n *StateNode) SubState() *State {
+func (n *StateNode) SubState() *GraphState {
 	return n.subState
 }
 

@@ -17,7 +17,7 @@ type LLM struct {
 	IncludeOutputs []string
 }
 
-func (l *LLM) Do(s *goraff.StateNode, r *goraff.StateReadOnly, triggeringNode *goraff.StateNode) error {
+func (l *LLM) Do(s *goraff.StateNode, r *goraff.GraphStateReader, triggeringNode *goraff.StateNode) error {
 	fmt.Println("Running LLM Node")
 	msg := l.buildIncludes(r)
 	msg = msg + "\n\n" + l.UserMsg
@@ -39,7 +39,7 @@ func (l *LLM) Do(s *goraff.StateNode, r *goraff.StateReadOnly, triggeringNode *g
 	return nil
 }
 
-func (l *LLM) buildIncludes(r *goraff.StateReadOnly) string {
+func (l *LLM) buildIncludes(r *goraff.GraphStateReader) string {
 	result := ""
 	for _, output := range l.IncludeOutputs {
 		wants := r.FirstNodeStateByName(output).GetStr("result")

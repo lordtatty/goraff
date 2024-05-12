@@ -26,7 +26,7 @@ type StateOutput struct {
 type Outputter struct {
 }
 
-func (o *Outputter) Output(s *StateReadOnly) *Output {
+func (o *Outputter) Output(s *GraphStateReader) *Output {
 	out := &Output{
 		PrimaryStateID: s.ID(),
 		States:         o.allStates(s),
@@ -35,7 +35,7 @@ func (o *Outputter) Output(s *StateReadOnly) *Output {
 	return out
 }
 
-func (o *Outputter) allStates(s *StateReadOnly) []StateOutput {
+func (o *Outputter) allStates(s *GraphStateReader) []StateOutput {
 	states := []StateOutput{
 		*o.state(s),
 	}
@@ -50,7 +50,7 @@ func (o *Outputter) allStates(s *StateReadOnly) []StateOutput {
 	return states
 }
 
-func (o *Outputter) state(s *StateReadOnly) *StateOutput {
+func (o *Outputter) state(s *GraphStateReader) *StateOutput {
 	nodeIDs := []string{}
 	for _, ns := range s.NodeIDs() {
 		n := s.NodeState(ns)
@@ -62,7 +62,7 @@ func (o *Outputter) state(s *StateReadOnly) *StateOutput {
 	}
 }
 
-func (o *Outputter) allNodes(s *StateReadOnly) []NodeOutput {
+func (o *Outputter) allNodes(s *GraphStateReader) []NodeOutput {
 	nodes := []NodeOutput{}
 	for _, ns := range s.NodeIDs() {
 		n := s.NodeState(ns)

@@ -10,7 +10,7 @@ import (
 )
 
 type NodeAction interface {
-	Do(s *StateNode, r *StateReadOnly, triggeringNS *StateNode) error
+	Do(s *StateNode, r *GraphStateReader, triggeringNS *StateNode) error
 }
 
 // Node represents a node in the graph
@@ -31,7 +31,7 @@ type Node struct {
 type Graph struct {
 	nodes      []*Node
 	entrypoint *Node
-	state      *State
+	state      *GraphState
 	edges      map[string][]*Edge
 	// outNode    string
 	// outKey     string
@@ -41,7 +41,7 @@ func New() *Graph {
 	return &Graph{}
 }
 
-func NewWithState(s *State) *Graph {
+func NewWithState(s *GraphState) *Graph {
 	return &Graph{
 		state: s,
 	}
@@ -60,16 +60,16 @@ func NewWithState(s *State) *Graph {
 // 	return s.Reader().GetStr(g.outKey)
 // }
 
-func (g *Graph) StateReadOnly() *StateReadOnly {
+func (g *Graph) StateReadOnly() *GraphStateReader {
 	if g.state == nil {
-		g.state = &State{}
+		g.state = &GraphState{}
 	}
 	return g.state.Reader()
 }
 
-func (g *Graph) State() *State {
+func (g *Graph) State() *GraphState {
 	if g.state == nil {
-		g.state = &State{}
+		g.state = &GraphState{}
 	}
 	return g.state
 }
@@ -137,7 +137,7 @@ func (g *Graph) AddEdge(fromID, toID string, condition FollowIf) error {
 
 func (g *Graph) Go() error {
 	if g.state == nil {
-		g.state = &State{}
+		g.state = &GraphState{}
 	}
 	return g.flowMgr()
 }
@@ -219,9 +219,9 @@ func (g *Graph) runNode(n *Node, triggeringNS *StateNode) ([]*Node, *StateNode, 
 
 func (g *Graph) BroadcastChanges(ws *websocket.WebSocketServer) {
 	if g.state == nil {
-		g.state = &State{}
+		g.state = &GraphState{}
 	}
-	g.state.AddOnUpdate(func(s *StateReadOnly) {
+	g.state.AddOnUpdate(func(s *GraphStateReader) {
 		out := Outputter{}
 		o := out.Output(s)
 		snd, err := json.Marshal(o)
@@ -235,9 +235,9 @@ func (g *Graph) BroadcastChanges(ws *websocket.WebSocketServer) {
 
 func (g *Graph) PrintUpdatesToConsole() {
 	if g.state == nil {
-		g.state = &State{}
+		g.state = &GraphState{}
 	}
-	g.state.AddOnUpdate(func(s *StateReadOnly) {
+	g.state.AddOnUpdate(func(s *GraphStateReader) {
 		out := Outputter{}
 		o := out.Output(s)
 		fmt.Println("##########################################")
