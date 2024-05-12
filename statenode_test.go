@@ -10,7 +10,7 @@ import (
 func TestNodeState_SubState(t *testing.T) {
 	assert := assert.New(t)
 	n := &goraff.StateNode{}
-	s := &goraff.GraphState{}
+	s := &goraff.StateGraph{}
 	n.SetSubState(s)
 
 	sn := s.NewNodeState("subnode")

@@ -23,7 +23,7 @@ type Node struct {
 type Graph struct {
 	nodes      []*Node
 	entrypoint *Node
-	state      *GraphState
+	state      *StateGraph
 	edges      map[string][]*Edge
 }
 
@@ -31,7 +31,7 @@ func New() *Graph {
 	return &Graph{}
 }
 
-func NewWithState(s *GraphState) *Graph {
+func NewWithState(s *StateGraph) *Graph {
 	return &Graph{
 		state: s,
 	}
@@ -39,14 +39,14 @@ func NewWithState(s *GraphState) *Graph {
 
 func (g *Graph) StateReadOnly() *GraphStateReader {
 	if g.state == nil {
-		g.state = &GraphState{}
+		g.state = &StateGraph{}
 	}
 	return g.state.Reader()
 }
 
-func (g *Graph) State() *GraphState {
+func (g *Graph) State() *StateGraph {
 	if g.state == nil {
-		g.state = &GraphState{}
+		g.state = &StateGraph{}
 	}
 	return g.state
 }
@@ -114,7 +114,7 @@ func (g *Graph) AddEdge(fromID, toID string, condition FollowIf) error {
 
 func (g *Graph) Go() error {
 	if g.state == nil {
-		g.state = &GraphState{}
+		g.state = &StateGraph{}
 	}
 	return g.flowMgr()
 }
@@ -196,7 +196,7 @@ func (g *Graph) runNode(n *Node, triggeringNS *StateNodeReader) ([]*Node, *State
 
 func (g *Graph) BroadcastChanges(ws *websocket.WebSocketServer) {
 	if g.state == nil {
-		g.state = &GraphState{}
+		g.state = &StateGraph{}
 	}
 	g.state.AddOnUpdate(func(s *GraphStateReader) {
 		out := Outputter{}
@@ -212,7 +212,7 @@ func (g *Graph) BroadcastChanges(ws *websocket.WebSocketServer) {
 
 func (g *Graph) PrintUpdatesToConsole() {
 	if g.state == nil {
-		g.state = &GraphState{}
+		g.state = &StateGraph{}
 	}
 	g.state.AddOnUpdate(func(s *GraphStateReader) {
 		out := Outputter{}

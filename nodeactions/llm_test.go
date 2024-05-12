@@ -47,7 +47,7 @@ func TestLLM_Do(t *testing.T) {
 		Client:    mClient,
 	}
 	msgIdx := 0
-	s := &goraff.GraphState{
+	s := &goraff.StateGraph{
 		OnUpdate: []func(s *goraff.GraphStateReader){
 			func(s *goraff.GraphStateReader) {
 				fmt.Println("===")

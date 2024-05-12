@@ -35,7 +35,7 @@ func TestNodeState_ID(t *testing.T) {
 
 func TestState_NodeStateByName(t *testing.T) {
 	assert := assert.New(t)
-	s := goraff.GraphState{}
+	s := goraff.StateGraph{}
 	// Test that this creates a new node state
 	n := s.NewNodeState("node1")
 	n.SetStr("key1", "value1")
@@ -54,7 +54,7 @@ func TestState_NodeStateByName(t *testing.T) {
 
 func TestState_NodeStateByID(t *testing.T) {
 	assert := assert.New(t)
-	s := goraff.GraphState{}
+	s := goraff.StateGraph{}
 	// Test that this creates a new node state
 	n := s.NewNodeState("node1")
 	n.SetStr("key1", "value1")
@@ -73,7 +73,7 @@ func TestState_NodeStateByID(t *testing.T) {
 
 func TestState_StateReadOnly(t *testing.T) {
 	assert := assert.New(t)
-	s := goraff.GraphState{}
+	s := goraff.StateGraph{}
 	// Test that this creates a new node state
 	n := s.NewNodeState("node1")
 	n.SetStr("key1", "value1")
@@ -86,7 +86,7 @@ func TestState_StateReadOnly(t *testing.T) {
 
 func TestState_StateReadOnly_ID(t *testing.T) {
 	assert := assert.New(t)
-	s := goraff.GraphState{}
+	s := goraff.StateGraph{}
 	// Test that this creates a new node state
 	n := s.NewNodeState("node1")
 	n.SetStr("key1", "value1")
@@ -100,7 +100,7 @@ func TestState_OnUpdate(t *testing.T) {
 	assert := assert.New(t)
 	updated := false
 	nsID := ""
-	s := goraff.GraphState{
+	s := goraff.StateGraph{
 		OnUpdate: []func(s *goraff.GraphStateReader){
 			func(s *goraff.GraphStateReader) {
 				assert.Equal("value", s.NodeState(nsID).GetStr("key"))

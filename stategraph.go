@@ -1,17 +1,17 @@
 package goraff
 
-// GraphState manages the state of all nodes in the graph
-type GraphState struct {
+// StateGraph manages the state of all nodes in the graph
+type StateGraph struct {
 	id         string
 	nodeStates []*StateNode
 	OnUpdate   []func(s *GraphStateReader)
 }
 
-func (s *GraphState) AddOnUpdate(f func(s *GraphStateReader)) {
+func (s *StateGraph) AddOnUpdate(f func(s *GraphStateReader)) {
 	s.OnUpdate = append(s.OnUpdate, f)
 }
 
-func (s *GraphState) onUpdate() {
+func (s *StateGraph) onUpdate() {
 	if s.OnUpdate == nil {
 		return
 	}
@@ -20,14 +20,14 @@ func (s *GraphState) onUpdate() {
 	}
 }
 
-func (s *GraphState) NewNodeState(name string) *StateNode {
+func (s *StateGraph) NewNodeState(name string) *StateNode {
 	// Else create a new node state
 	ns := &StateNode{name: name, onUpdate: s.onUpdate}
 	s.nodeStates = append(s.nodeStates, ns)
 	return ns
 }
 
-func (s *GraphState) NodeStateByName(name string) []*StateNode {
+func (s *StateGraph) NodeStateByName(name string) []*StateNode {
 	// First see if we have this node state
 	result := []*StateNode{}
 	for _, ns := range s.nodeStates {
@@ -38,7 +38,7 @@ func (s *GraphState) NodeStateByName(name string) []*StateNode {
 	return result
 }
 
-func (s *GraphState) FirstNodeStateByName(name string) *StateNode {
+func (s *StateGraph) FirstNodeStateByName(name string) *StateNode {
 	// First see if we have this node state
 	for _, ns := range s.nodeStates {
 		if ns.name == name {
@@ -48,7 +48,7 @@ func (s *GraphState) FirstNodeStateByName(name string) *StateNode {
 	return nil
 }
 
-func (s *GraphState) NodeStateByID(id string) *StateNode {
+func (s *StateGraph) NodeStateByID(id string) *StateNode {
 	// First see if we have this node state
 	for _, ns := range s.nodeStates {
 		if ns.Reader().ID() == id {
@@ -58,13 +58,13 @@ func (s *GraphState) NodeStateByID(id string) *StateNode {
 	return nil
 }
 
-func (s *GraphState) Reader() *GraphStateReader {
+func (s *StateGraph) Reader() *GraphStateReader {
 	return &GraphStateReader{s}
 }
 
 // GraphStateReader is a read only view of the state
 type GraphStateReader struct {
-	state *GraphState
+	state *StateGraph
 }
 
 func (s *GraphStateReader) FirstNodeStateByName(name string) *StateNodeReader {
