@@ -174,7 +174,6 @@ func (g *Graph) flowMgr() error {
 
 func (g *Graph) runNode(n *Node, triggeringNS *StateNodeReader) ([]*Node, *StateNode, error) {
 	s := g.state.NewNodeState(n.Name)
-	s.SetStr("name", n.Name)
 	r := g.state.Reader()
 	err := n.Action.Do(s, r, triggeringNS)
 	if err != nil {
