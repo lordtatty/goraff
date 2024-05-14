@@ -1,5 +1,7 @@
 package goraff
 
+import "github.com/google/uuid"
+
 // StateGraph manages the state of all nodes in the graph
 type StateGraph struct {
 	id         string
@@ -100,5 +102,9 @@ func (s *GraphStateReader) NodeIDs() []string {
 }
 
 func (s *GraphStateReader) ID() string {
+	if s.state.id == "" {
+		id := uuid.New().String()
+		s.state.id = id
+	}
 	return s.state.id
 }

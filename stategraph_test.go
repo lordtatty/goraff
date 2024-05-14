@@ -114,3 +114,10 @@ func TestState_OnUpdate(t *testing.T) {
 	n.SetStr("key", "value")
 	assert.True(updated)
 }
+
+func TestStateReader_ID(t *testing.T) {
+	assert := assert.New(t)
+	s := goraff.StateGraph{}
+	r := s.Reader()
+	assert.Regexp("^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$", r.ID())
+}
