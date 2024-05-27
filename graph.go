@@ -147,7 +147,11 @@ func (g *Graph) flowMgr() error {
 				if foundErr != nil {
 					return
 				}
-				nextNodes, compeltedState, err := g.runNode(n.Node, n.triggeringNS.Reader())
+				var tr *StateNodeReader = nil
+				if n.triggeringNS != nil {
+					tr = n.triggeringNS.Reader()
+				}
+				nextNodes, compeltedState, err := g.runNode(n.Node, tr)
 				if err != nil {
 					fmt.Println("error running node, letting all nodes drain: ", n.Node.Name)
 					mut.Lock()

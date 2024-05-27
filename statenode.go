@@ -38,9 +38,6 @@ func (n *StateNode) SetStr(key, value string) {
 }
 
 func (n *StateNode) Reader() *StateNodeReader {
-	if n == nil {
-		return nil
-	}
 	return &StateNodeReader{ns: n}
 }
 

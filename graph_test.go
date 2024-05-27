@@ -257,3 +257,52 @@ func TestGraph_EntrypointNotSet(t *testing.T) {
 	assert.Error(err)
 	assert.Equal("entrypoint not set", err.Error())
 }
+
+type actionMockCheckReader struct {
+	expectNilReader bool
+	t               *testing.T
+}
+
+func (a *actionMockCheckReader) Do(s *goraff.StateNode, r *goraff.GraphStateReader, triggeringNS *goraff.StateNodeReader) error {
+	if a.expectNilReader {
+		if triggeringNS != nil {
+			a.t.Error("Expected nil reader but got a non-nil reader")
+		}
+		s.SetStr("check_reader_key", "reader is nil")
+	} else {
+		if triggeringNS == nil {
+			a.t.Error("Expected non-nil reader but got a nil reader")
+		}
+		s.SetStr("check_reader_key", "reader is not nil")
+	}
+	return nil
+}
+
+func TestGraph_FlowMgr_ReaderPassing(t *testing.T) {
+	assert := assert.New(t)
+	g := &goraff.Graph{}
+
+	// Define an action mock that will check the triggeringNS reader for nil
+	checkReaderAction1 := &actionMockCheckReader{
+		expectNilReader: true,
+		t:               t,
+	}
+	n1 := g.AddNode(checkReaderAction1)
+
+	// Define another action mock that will be triggered by the first and expects a non-nil reader
+	checkReaderAction2 := &actionMockCheckReader{
+		expectNilReader: false,
+		t:               t,
+	}
+	n2 := g.AddNode(checkReaderAction2)
+
+	g.SetEntrypoint(n1)
+	g.AddEdge(n1, n2, nil)
+
+	err := g.Go()
+	assert.NoError(err)
+
+	state := g.State()
+	assert.Equal("reader is nil", state.FirstNodeStateByName(n1).Reader().GetStr("check_reader_key"))
+	assert.Equal("reader is not nil", state.FirstNodeStateByName(n2).Reader().GetStr("check_reader_key"))
+}
