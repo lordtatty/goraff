@@ -1,7 +1,6 @@
 package nodeactions_test
 
 import (
-	"fmt"
 	"strings"
 	"testing"
 
@@ -40,6 +39,7 @@ func TestLLM_Do(t *testing.T) {
 			<-done
 			return expectedResult, expectedError
 		})
+
 	// Execute the method under test
 	sut := &nodeactions.LLM{
 		SystemMsg: expectedSystemMsg,
@@ -47,16 +47,14 @@ func TestLLM_Do(t *testing.T) {
 		Client:    mClient,
 	}
 	msgIdx := 0
-	s := &goraff.StateGraph{
-		OnUpdate: []func(s *goraff.GraphStateReader){
-			func(s *goraff.GraphStateReader) {
-				fmt.Println("===")
-				msgIdx++
-				want := strings.Join(expectedMessages[:msgIdx], "")
-				assert.Equal(want, s.FirstNodeStateByName("node1").GetStr("result"))
-			},
-		},
-	}
+	s := goraff.StateGraph{}
+	s.Notifier().Listen(func(ntfy goraff.StateChangeNotification) {
+		msgIdx++
+		want := strings.Join(expectedMessages[:msgIdx], "")
+		n, err := s.Reader().FirstNodeStateByName("node1")
+		assert.NoError(err)
+		assert.Equal(want, n.GetStr("result"))
+	})
 	n := s.NewNodeState("node1")
 	r := &goraff.GraphStateReader{}
 

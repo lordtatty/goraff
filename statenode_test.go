@@ -17,7 +17,8 @@ func TestNodeState_SubState(t *testing.T) {
 	sn.SetStr("key1", "value1")
 
 	subGraph := n.Reader().SubGraph()
-	node := subGraph.NodeStateByID(sn.Reader().ID())
+	node, err := subGraph.NodeStateByID(sn.Reader().ID())
+	assert.Nil(err)
 	assert.Equal("value1", node.GetStr("key1"))
 }
 

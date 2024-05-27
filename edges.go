@@ -1,8 +1,10 @@
 package goraff
 
+import "fmt"
+
 // Condition is a condition that must be met for an edge to be taken
 type FollowIf interface {
-	Match(s *GraphStateReader) bool
+	Match(s *GraphStateReader) (bool, error)
 }
 
 // Edge represents an edge in the graph
@@ -12,10 +14,10 @@ type Edge struct {
 	Condition FollowIf
 }
 
-func (e *Edge) TriggersMet(s *GraphStateReader) bool {
+func (e *Edge) TriggersMet(s *GraphStateReader) (bool, error) {
 	if e.Condition == nil {
 		// without a conditon, we always follow the edge
-		return true
+		return true, nil
 	}
 	return e.Condition.Match(s)
 }
@@ -26,8 +28,12 @@ type followIfKeyMatchesName struct {
 	Value string
 }
 
-func (e *followIfKeyMatchesName) Match(s *GraphStateReader) bool {
-	return s.state.FirstNodeStateByName(e.Name).Reader().GetStr(e.Key) == e.Value
+func (e *followIfKeyMatchesName) Match(s *GraphStateReader) (bool, error) {
+	n, err := s.FirstNodeStateByName(e.Name)
+	if err != nil {
+		return false, fmt.Errorf("error getting node state: %w", err)
+	}
+	return n.GetStr(e.Key) == e.Value, nil
 }
 
 func FollowIfKeyMatches(nodeID, key, value string) FollowIf {
@@ -38,17 +44,20 @@ type followIfNodesCompleted struct {
 	NodeIDs []string
 }
 
-func (e *followIfNodesCompleted) Match(s *GraphStateReader) bool {
+func (e *followIfNodesCompleted) Match(s *GraphStateReader) (bool, error) {
 	for _, nodeID := range e.NodeIDs {
-		st := s.FirstNodeStateByName(nodeID)
+		st, err := s.FirstNodeStateByName(nodeID)
+		if err != nil {
+			return false, fmt.Errorf("error getting node state: %w", err)
+		}
 		if st == nil {
-			return false
+			return false, nil
 		}
 		if !st.Done() {
-			return false
+			return false, nil
 		}
 	}
-	return true
+	return true, nil
 }
 
 func FollowIfNodesCompleted(nodeIDs ...string) FollowIf {

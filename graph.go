@@ -183,7 +183,11 @@ func (g *Graph) runNode(n *Node, triggeringNS *StateNodeReader) ([]*Node, *State
 	s.MarkDone()
 	if edges, ok := g.edges[n.Name]; ok {
 		for _, e := range edges {
-			if e.TriggersMet(r) {
+			t, err := e.TriggersMet(r)
+			if err != nil {
+				return nil, nil, fmt.Errorf("error checking edge condition: %w", err)
+			}
+			if t {
 				nextNodes = append(nextNodes, e.To)
 			}
 		}

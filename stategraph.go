@@ -1,30 +1,28 @@
 package goraff
 
-import "github.com/google/uuid"
+import (
+	"fmt"
+
+	"github.com/google/uuid"
+)
 
 // StateGraph manages the state of all nodes in the graph
 type StateGraph struct {
 	id         string
 	nodeStates []*StateNode
-	OnUpdate   []func(s *GraphStateReader)
+	notifier   *StateNotifier
 }
 
-func (s *StateGraph) AddOnUpdate(f func(s *GraphStateReader)) {
-	s.OnUpdate = append(s.OnUpdate, f)
-}
-
-func (s *StateGraph) onUpdate() {
-	if s.OnUpdate == nil {
-		return
+func (s *StateGraph) Notifier() *StateNotifier {
+	if s.notifier == nil {
+		s.notifier = &StateNotifier{}
 	}
-	for _, f := range s.OnUpdate {
-		f(s.Reader())
-	}
+	return s.notifier
 }
 
 func (s *StateGraph) NewNodeState(name string) *StateNode {
 	// Else create a new node state
-	ns := &StateNode{name: name, onUpdate: s.onUpdate}
+	ns := &StateNode{name: name, notifier: s.notifier}
 	s.nodeStates = append(s.nodeStates, ns)
 	return ns
 }
@@ -69,28 +67,28 @@ type GraphStateReader struct {
 	state *StateGraph
 }
 
-func (s *GraphStateReader) NodeStateByID(id string) *StateNodeReader {
+func (s *GraphStateReader) NodeStateByID(id string) (*StateNodeReader, error) {
 	r := s.state.NodeStateByID(id)
 	if r == nil {
-		return nil
+		return nil, fmt.Errorf("Node state with id %s not found", id)
 	}
-	return &StateNodeReader{r}
+	return &StateNodeReader{r}, nil
 }
 
-func (s *GraphStateReader) FirstNodeStateByName(name string) *StateNodeReader {
+func (s *GraphStateReader) FirstNodeStateByName(name string) (*StateNodeReader, error) {
 	st := s.state.FirstNodeStateByName(name)
 	if st == nil {
-		return nil
+		return nil, fmt.Errorf("Node state with name %s not found", name)
 	}
-	return &StateNodeReader{st}
+	return &StateNodeReader{st}, nil
 }
 
-func (s *GraphStateReader) NodeState(id string) *StateNodeReader {
+func (s *GraphStateReader) NodeState(id string) (*StateNodeReader, error) {
 	r := s.state.NodeStateByID(id)
 	if r == nil {
-		return nil
+		return nil, fmt.Errorf("Node state with id %s not found", id)
 	}
-	return &StateNodeReader{r}
+	return &StateNodeReader{r}, nil
 }
 
 func (s *GraphStateReader) NodeIDs() []string {

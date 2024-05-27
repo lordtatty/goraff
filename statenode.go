@@ -1,6 +1,8 @@
 package goraff
 
-import "github.com/google/uuid"
+import (
+	"github.com/google/uuid"
+)
 
 // Node state represents a key value store for an individual node
 type StateNode struct {
@@ -8,16 +10,12 @@ type StateNode struct {
 	name     string
 	state    map[string][]byte
 	done     bool
-	onUpdate func()
+	notifier *StateNotifier
 	subGraph *StateGraph
 }
 
 func (n *StateNode) SetSubGraph(s *StateGraph) {
-	s.AddOnUpdate(func(s *GraphStateReader) {
-		if n.onUpdate != nil {
-			n.onUpdate()
-		}
-	})
+	s.notifier = n.notifier
 	n.subGraph = s
 }
 
@@ -30,8 +28,8 @@ func (n *StateNode) Set(key string, value []byte) {
 		n.state = make(map[string][]byte)
 	}
 	n.state[key] = value
-	if n.onUpdate != nil {
-		n.onUpdate()
+	if n.notifier != nil {
+		n.notifier.Notify(StateChangeNotification{NodeID: n.id})
 	}
 }
 
@@ -52,6 +50,9 @@ type StateNodeReader struct {
 }
 
 func (n *StateNodeReader) State() map[string][]byte {
+	if n.ns == nil {
+		return map[string][]byte{}
+	}
 	return n.ns.state
 }
 

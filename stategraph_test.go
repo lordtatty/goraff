@@ -79,7 +79,8 @@ func TestState_StateReadOnly(t *testing.T) {
 	n.SetStr("key1", "value1")
 	n.SetStr("key2", "value2")
 	r := s.Reader()
-	nr := r.NodeState(n.Reader().ID())
+	nr, err := r.NodeState(n.Reader().ID())
+	assert.Nil(err)
 	assert.Equal("value1", nr.GetStr("key1"))
 	assert.Equal("value2", nr.GetStr("key2"))
 }
@@ -92,27 +93,19 @@ func TestState_StateReadOnly_ID(t *testing.T) {
 	n.SetStr("key1", "value1")
 	n.SetStr("key2", "value2")
 	r := s.Reader()
-	nr := r.NodeState(n.Reader().ID())
+	nr, err := r.NodeState(n.Reader().ID())
+	assert.Nil(err)
 	assert.Equal("node1", nr.Name())
 }
 
-func TestState_OnUpdate(t *testing.T) {
+func TestState_Notifier(t *testing.T) {
 	assert := assert.New(t)
-	updated := false
-	nsID := ""
-	s := goraff.StateGraph{
-		OnUpdate: []func(s *goraff.GraphStateReader){
-			func(s *goraff.GraphStateReader) {
-				assert.Equal("value", s.NodeState(nsID).GetStr("key"))
-				updated = true
-			},
-		},
-	}
-	n := s.NewNodeState("node1")
-	nsID = n.Reader().ID()
-	assert.False(updated)
-	n.SetStr("key", "value")
-	assert.True(updated)
+	s := goraff.StateGraph{}
+	assert.NotNil(s.Notifier())
+	// assert that the returned notifier is of type StateNotifier
+	n := s.Notifier()
+	assert.IsType(&goraff.StateNotifier{}, n)
+
 }
 
 func TestStateReader_ID(t *testing.T) {

@@ -19,10 +19,12 @@ type LLM struct {
 
 func (l *LLM) Do(s *goraff.StateNode, r *goraff.GraphStateReader, triggeringNode *goraff.StateNodeReader) error {
 	fmt.Println("Running LLM Node")
-	msg := l.buildIncludes(r)
+	msg, err := l.buildIncludes(r)
+	if err != nil {
+		return fmt.Errorf("error building includes: %w", err)
+	}
 	msg = msg + "\n\n" + l.UserMsg
 	streamCh := make(chan string)
-	var err error
 	go func() {
 		_, e := l.Client.Chat(l.SystemMsg, msg, streamCh)
 		err = e
@@ -39,14 +41,22 @@ func (l *LLM) Do(s *goraff.StateNode, r *goraff.GraphStateReader, triggeringNode
 	return nil
 }
 
-func (l *LLM) buildIncludes(r *goraff.GraphStateReader) string {
+func (l *LLM) buildIncludes(r *goraff.GraphStateReader) (string, error) {
 	result := ""
 	for _, output := range l.IncludeOutputs {
-		wants := r.FirstNodeStateByName(output).GetStr("result")
-		name := r.FirstNodeStateByName(output).GetStr("name")
+		n, err := r.FirstNodeStateByName(output)
+		if err != nil {
+			return "", fmt.Errorf("error getting node state: %w", err)
+		}
+		wants := n.GetStr("result")
+		n, err = r.FirstNodeStateByName(output)
+		if err != nil {
+			return "", fmt.Errorf("error getting node state: %w", err)
+		}
+		name := n.GetStr("name")
 		wantStr := fmt.Sprintf("NAME: %s", name)
 		resultStr := fmt.Sprintf("RESULT: %s", wants)
 		result += fmt.Sprintf("### OUTPUT BLOCK START###\n%s\n%s\n### OUTPUT BLOCK END###\n", wantStr, resultStr)
 	}
-	return result
+	return result, nil
 }

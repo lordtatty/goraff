@@ -211,16 +211,17 @@ type mockFollowIfWantsDone struct {
 	t       *testing.T
 }
 
-func (f *mockFollowIfWantsDone) Match(s *goraff.GraphStateReader) bool {
+func (f *mockFollowIfWantsDone) Match(s *goraff.GraphStateReader) (bool, error) {
 	assert := assert.New(f.t)
 	for _, nodeID := range f.nodeIDs {
-		st := s.FirstNodeStateByName(nodeID)
+		st, err := s.FirstNodeStateByName(nodeID)
+		assert.Nil(err)
 		d := st.Done()
 		fmt.Println(d)
 		assert.NotNil(st)
 		assert.True(st.Done())
 	}
-	return true
+	return true, nil
 }
 
 func TestGraph_StateIsMarkedDoneBeforeTriggers(t *testing.T) {

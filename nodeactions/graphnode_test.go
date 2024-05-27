@@ -30,5 +30,7 @@ func TestGraphNode_Do(t *testing.T) {
 	node := graph.State().FirstNodeStateByName(n1)
 	sub := node.Reader().SubGraph()
 	assert.Equal(substate.Reader(), sub)
-	assert.Equal("value1", sub.FirstNodeStateByName(input1).GetStr("result"))
+	n, err := sub.FirstNodeStateByName(input1)
+	assert.Nil(err)
+	assert.Equal("value1", n.GetStr("result"))
 }

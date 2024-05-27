@@ -26,14 +26,14 @@ func TestOutputter(t *testing.T) {
 
 	want := &outputs.Output{
 		PrimaryStateID: s.Reader().ID(),
-		States: []outputs.StateOutput{
+		States: []outputs.GraphOutput{
 			{
 				ID:      s.Reader().ID(),
-				NodeIDs: []string{n1.Reader().Name()},
+				NodeIDs: []string{n1.Reader().ID()},
 			},
 			{
 				ID:      substate.Reader().ID(),
-				NodeIDs: []string{subnode.Reader().Name()},
+				NodeIDs: []string{subnode.Reader().ID()},
 			},
 		},
 		Nodes: []outputs.NodeOutput{
@@ -43,7 +43,7 @@ func TestOutputter(t *testing.T) {
 				Vals: []outputs.NodeOutputVal{
 					{Name: "key2", Value: "value2"},
 				},
-				SubStateID: substate.Reader().ID(),
+				SubGraphID: substate.Reader().ID(),
 			},
 			{
 				ID:   subnode.Reader().ID(),
@@ -51,7 +51,7 @@ func TestOutputter(t *testing.T) {
 				Vals: []outputs.NodeOutputVal{
 					{Name: "key1", Value: "value1"},
 				},
-				SubStateID: "",
+				SubGraphID: "",
 			},
 		},
 	}
