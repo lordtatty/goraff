@@ -77,6 +77,16 @@ func (g *Groq) Chat(systemMsg, userMsg string, streamCh chan string) (string, er
 	}
 	defer resp.Body.Close()
 
+	// Check if the response status code is not 200 OK
+	if resp.StatusCode != http.StatusOK {
+		// Read the response body
+		responseBody, err := io.ReadAll(resp.Body)
+		if err != nil {
+			return "", fmt.Errorf("failed to read non-200 response body: %w", err)
+		}
+		return "", fmt.Errorf("failed to send HTTP request: %s", string(responseBody))
+	}
+
 	// Handle streaming responses if required
 	if streamCh != nil {
 		// Create a new bufio.Reader to read lines from the response body

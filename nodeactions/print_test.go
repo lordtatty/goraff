@@ -11,8 +11,8 @@ import (
 func TestPrint_Do(t *testing.T) {
 	assert := assert.New(t)
 	sut := nodeactions.Print{}
-	s := &goraff.StateNode{}
-	r := &goraff.GraphStateReader{}
+	s := &goraff.Node{}
+	r := &goraff.ReadableGraph{}
 	err := sut.Do(s, r, nil)
 	assert.NoError(err)
 }
@@ -20,9 +20,9 @@ func TestPrint_Do(t *testing.T) {
 func TestPrint_DoWithTriggeringNode(t *testing.T) {
 	assert := assert.New(t)
 	sut := nodeactions.Print{}
-	s := &goraff.StateNode{}
-	r := &goraff.GraphStateReader{}
-	tn := &goraff.StateNode{}
+	s := &goraff.Node{}
+	r := &goraff.ReadableGraph{}
+	tn := &goraff.Node{}
 	triggeringNode := tn.Reader()
 	err := sut.Do(s, r, triggeringNode)
 	assert.NoError(err)

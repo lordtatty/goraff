@@ -4,17 +4,17 @@ import "fmt"
 
 // Condition is a condition that must be met for an edge to be taken
 type FollowIf interface {
-	Match(s *GraphStateReader) (bool, error)
+	Match(s *ReadableGraph) (bool, error)
 }
 
 // Edge represents an edge in the graph
 type Edge struct {
-	From      *Node
-	To        *Node
+	From      *Block
+	To        *Block
 	Condition FollowIf
 }
 
-func (e *Edge) TriggersMet(s *GraphStateReader) (bool, error) {
+func (e *Edge) TriggersMet(s *ReadableGraph) (bool, error) {
 	if e.Condition == nil {
 		// without a conditon, we always follow the edge
 		return true, nil
@@ -28,7 +28,7 @@ type followIfKeyMatchesName struct {
 	Value string
 }
 
-func (e *followIfKeyMatchesName) Match(s *GraphStateReader) (bool, error) {
+func (e *followIfKeyMatchesName) Match(s *ReadableGraph) (bool, error) {
 	n, err := s.FirstNodeStateByName(e.Name)
 	if err != nil {
 		return false, fmt.Errorf("error getting node state: %w", err)
@@ -44,7 +44,7 @@ type followIfNodesCompleted struct {
 	NodeIDs []string
 }
 
-func (e *followIfNodesCompleted) Match(s *GraphStateReader) (bool, error) {
+func (e *followIfNodesCompleted) Match(s *ReadableGraph) (bool, error) {
 	for _, nodeID := range e.NodeIDs {
 		st, err := s.FirstNodeStateByName(nodeID)
 		if err != nil {

@@ -47,7 +47,7 @@ func TestLLM_Do(t *testing.T) {
 		Client:    mClient,
 	}
 	msgIdx := 0
-	s := goraff.StateGraph{}
+	s := goraff.Graph{}
 	s.Notifier().Listen(func(ntfy goraff.StateChangeNotification) {
 		msgIdx++
 		want := strings.Join(expectedMessages[:msgIdx], "")
@@ -56,7 +56,7 @@ func TestLLM_Do(t *testing.T) {
 		assert.Equal(want, n.GetStr("result"))
 	})
 	n := s.NewNodeState("node1")
-	r := &goraff.GraphStateReader{}
+	r := &goraff.ReadableGraph{}
 
 	err := sut.Do(n, r, nil)
 	assert.NoError(err)

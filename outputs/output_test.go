@@ -10,11 +10,11 @@ import (
 
 func TestOutputter(t *testing.T) {
 	assert := assert.New(t)
-	substate := &goraff.StateGraph{}
+	substate := &goraff.Graph{}
 	subnode := substate.NewNodeState("subnode")
 	subnode.SetStr("key1", "value1")
 
-	s := goraff.StateGraph{}
+	s := goraff.Graph{}
 	n1 := s.NewNodeState("node1")
 	n1.SetStr("key2", "value2")
 	n1.SetSubGraph(substate)

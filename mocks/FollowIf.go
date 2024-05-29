@@ -21,7 +21,7 @@ func (_m *FollowIf) EXPECT() *FollowIf_Expecter {
 }
 
 // Match provides a mock function with given fields: s
-func (_m *FollowIf) Match(s *goraff.GraphStateReader) bool {
+func (_m *FollowIf) Match(s *goraff.ReadableGraph) bool {
 	ret := _m.Called(s)
 
 	if len(ret) == 0 {
@@ -29,7 +29,7 @@ func (_m *FollowIf) Match(s *goraff.GraphStateReader) bool {
 	}
 
 	var r0 bool
-	if rf, ok := ret.Get(0).(func(*goraff.GraphStateReader) bool); ok {
+	if rf, ok := ret.Get(0).(func(*goraff.ReadableGraph) bool); ok {
 		r0 = rf(s)
 	} else {
 		r0 = ret.Get(0).(bool)
@@ -49,9 +49,9 @@ func (_e *FollowIf_Expecter) Match(s interface{}) *FollowIf_Match_Call {
 	return &FollowIf_Match_Call{Call: _e.mock.On("Match", s)}
 }
 
-func (_c *FollowIf_Match_Call) Run(run func(s *goraff.GraphStateReader)) *FollowIf_Match_Call {
+func (_c *FollowIf_Match_Call) Run(run func(s *goraff.ReadableGraph)) *FollowIf_Match_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(*goraff.GraphStateReader))
+		run(args[0].(*goraff.ReadableGraph))
 	})
 	return _c
 }
@@ -61,7 +61,7 @@ func (_c *FollowIf_Match_Call) Return(_a0 bool) *FollowIf_Match_Call {
 	return _c
 }
 
-func (_c *FollowIf_Match_Call) RunAndReturn(run func(*goraff.GraphStateReader) bool) *FollowIf_Match_Call {
+func (_c *FollowIf_Match_Call) RunAndReturn(run func(*goraff.ReadableGraph) bool) *FollowIf_Match_Call {
 	_c.Call.Return(run)
 	return _c
 }

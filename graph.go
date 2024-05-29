@@ -2,199 +2,107 @@ package goraff
 
 import (
 	"fmt"
-	"sync"
 
 	"github.com/google/uuid"
 )
 
-type NodeAction interface {
-	Do(s *StateNode, r *GraphStateReader, triggeringNS *StateNodeReader) error
-}
-
-// Node represents a node in the graph
-type Node struct {
-	Action NodeAction
-	Name   string
-}
-
-// Graph represents a graph of nodes
+// Graph manages the state of all nodes in the graph
 type Graph struct {
-	nodes      []*Node
-	entrypoint *Node
-	state      *StateGraph
-	edges      map[string][]*Edge
+	id       string
+	nodes    []*Node
+	notifier *GraphNotifier
 }
 
-func New() *Graph {
-	return &Graph{}
-}
-
-func NewWithState(s *StateGraph) *Graph {
-	return &Graph{
-		state: s,
+func (s *Graph) Notifier() *GraphNotifier {
+	if s.notifier == nil {
+		s.notifier = &GraphNotifier{}
 	}
+	return s.notifier
 }
 
-func (g *Graph) StateReadOnly() *GraphStateReader {
-	if g.state == nil {
-		g.state = &StateGraph{}
+func (s *Graph) NewNodeState(name string) *Node {
+	// Else create a new node state
+	ns := &Node{name: name, notifier: s.notifier}
+	s.nodes = append(s.nodes, ns)
+	return ns
+}
+
+func (s *Graph) NodeStateByName(name string) []*Node {
+	// First see if we have this node state
+	result := []*Node{}
+	for _, ns := range s.nodes {
+		if ns.name == name {
+			result = append(result, ns)
+		}
 	}
-	return g.state.Reader()
+	return result
 }
 
-func (g *Graph) State() *StateGraph {
-	if g.state == nil {
-		g.state = &StateGraph{}
-	}
-	return g.state
-}
-
-func (g *Graph) Len() int {
-	return len(g.nodes)
-}
-
-func (g *Graph) AddNode(a NodeAction) string {
-	id := uuid.New().String()
-	return g.AddNodeWithName(id, a)
-}
-
-func (g *Graph) AddNodeWithName(name string, a NodeAction) string {
-	n := &Node{Action: a, Name: name}
-	g.nodes = append(g.nodes, n)
-	return n.Name
-}
-
-func (g *Graph) SetEntrypoint(id string) {
-	n := g.nodeByID(id)
-	g.entrypoint = n
-}
-
-func (g *Graph) nodeByID(id string) *Node {
-	for _, n := range g.nodes {
-		if n.Name == id {
-			return n
+func (s *Graph) FirstNodeStateByName(name string) *Node {
+	// First see if we have this node state
+	for _, ns := range s.nodes {
+		if ns.name == name {
+			return ns
 		}
 	}
 	return nil
 }
 
-type ErrNodeNotFound struct {
-	ID string
-}
-
-func (e ErrNodeNotFound) Error() string {
-	return "node not found: " + e.ID
-}
-
-func (g *Graph) AddEdge(fromID, toID string, condition FollowIf) error {
-	from := g.nodeByID(fromID)
-	if from == nil {
-		return ErrNodeNotFound{
-			ID: fromID,
+func (s *Graph) NodeByID(id string) *Node {
+	// First see if we have this node state
+	for _, ns := range s.nodes {
+		if ns.Reader().ID() == id {
+			return ns
 		}
 	}
-	to := g.nodeByID(toID)
-	if to == nil {
-		return ErrNodeNotFound{
-			ID: toID,
-		}
-	}
-	if g.edges == nil {
-		g.edges = make(map[string][]*Edge)
-	}
-	e := &Edge{From: from, To: to, Condition: condition}
-	if _, ok := g.edges[from.Name]; !ok {
-		g.edges[from.Name] = []*Edge{}
-	}
-	g.edges[from.Name] = append(g.edges[from.Name], e)
 	return nil
 }
 
-func (g *Graph) Go() error {
-	if g.state == nil {
-		g.state = &StateGraph{}
-	}
-	return g.flowMgr()
+func (s *Graph) Reader() *ReadableGraph {
+	return &ReadableGraph{s}
 }
 
-type nextNode struct {
-	Node         *Node
-	triggeringNS *StateNode
+// ReadableGraph is a read only view of the state
+type ReadableGraph struct {
+	state *Graph
 }
 
-func (g *Graph) flowMgr() error {
-	if g.entrypoint == nil {
-		return fmt.Errorf("entrypoint not set")
+func (s *ReadableGraph) NodeByID(id string) (*ReadableNode, error) {
+	r := s.state.NodeByID(id)
+	if r == nil {
+		return nil, fmt.Errorf("Node state with id %s not found", id)
 	}
-
-	completedCh := make(chan nextNode, 10)
-	var wg sync.WaitGroup
-
-	completedCh <- nextNode{
-		Node:         g.entrypoint,
-		triggeringNS: nil,
-	}
-	wg.Add(1) // Increment for the initial node
-
-	fmt.Println("starting node", g.entrypoint.Name)
-	var foundErr error
-	mut := sync.Mutex{}
-	go func() {
-		for n := range completedCh {
-			go func(n nextNode) {
-				fmt.Println("completed node", n.Node.Name)
-				defer wg.Done() // Ensure we mark this goroutine as done on finish
-				if foundErr != nil {
-					return
-				}
-				var tr *StateNodeReader = nil
-				if n.triggeringNS != nil {
-					tr = n.triggeringNS.Reader()
-				}
-				nextNodes, compeltedState, err := g.runNode(n.Node, tr)
-				if err != nil {
-					fmt.Println("error running node, letting all nodes drain: ", n.Node.Name)
-					mut.Lock()
-					foundErr = fmt.Errorf("error running node: %w", err)
-					mut.Unlock()
-					return
-				}
-				for _, next := range nextNodes {
-					fmt.Println("adding node", next.Name)
-					wg.Add(1) // Increment for each new node
-					completedCh <- nextNode{
-						Node:         next,
-						triggeringNS: compeltedState,
-					}
-				}
-			}(n)
-		}
-	}()
-
-	wg.Wait()          // Wait for all goroutines to finish
-	close(completedCh) // Safe to close here as no more writes will happen
-	return foundErr
+	return &ReadableNode{r}, nil
 }
 
-func (g *Graph) runNode(n *Node, triggeringNS *StateNodeReader) ([]*Node, *StateNode, error) {
-	s := g.state.NewNodeState(n.Name)
-	r := g.state.Reader()
-	err := n.Action.Do(s, r, triggeringNS)
-	if err != nil {
-		return nil, nil, err
+func (s *ReadableGraph) FirstNodeStateByName(name string) (*ReadableNode, error) {
+	st := s.state.FirstNodeStateByName(name)
+	if st == nil {
+		return nil, fmt.Errorf("Node state with name %s not found", name)
 	}
-	nextNodes := []*Node{}
-	s.MarkDone()
-	if edges, ok := g.edges[n.Name]; ok {
-		for _, e := range edges {
-			t, err := e.TriggersMet(r)
-			if err != nil {
-				return nil, nil, fmt.Errorf("error checking edge condition: %w", err)
-			}
-			if t {
-				nextNodes = append(nextNodes, e.To)
-			}
-		}
+	return &ReadableNode{st}, nil
+}
+
+func (s *ReadableGraph) Node(id string) (*ReadableNode, error) {
+	r := s.state.NodeByID(id)
+	if r == nil {
+		return nil, fmt.Errorf("Node state with id %s not found", id)
 	}
-	return nextNodes, s, nil
+	return &ReadableNode{r}, nil
+}
+
+func (s *ReadableGraph) NodeIDs() []string {
+	ids := []string{}
+	for _, ns := range s.state.nodes {
+		ids = append(ids, ns.Reader().ID())
+	}
+	return ids
+}
+
+func (s *ReadableGraph) ID() string {
+	if s.state.id == "" {
+		id := uuid.New().String()
+		s.state.id = id
+	}
+	return s.state.id
 }

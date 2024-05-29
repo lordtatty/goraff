@@ -8,23 +8,26 @@ type StateChangeNotification struct {
 	NodeID string
 }
 
-type StateNotifier struct {
+type GraphNotifier struct {
 	mu        sync.Mutex
 	callbacks []func(StateChangeNotification)
 }
 
 // Register adds a new callback function.
-func (n *StateNotifier) Listen(callback func(StateChangeNotification)) {
+func (n *GraphNotifier) Listen(callback func(StateChangeNotification)) {
+	n.mu.Lock()
+	defer n.mu.Unlock()
 	if n.callbacks == nil {
 		n.callbacks = make([]func(StateChangeNotification), 0)
 	}
-	n.mu.Lock()
-	defer n.mu.Unlock()
+	if callback == nil {
+		return
+	}
 	n.callbacks = append(n.callbacks, callback)
 }
 
 // Notify triggers all registered callbacks with the given notification.
-func (n *StateNotifier) Notify(notification StateChangeNotification) {
+func (n *GraphNotifier) Notify(notification StateChangeNotification) {
 	n.mu.Lock()
 	defer n.mu.Unlock()
 	for _, callback := range n.callbacks {

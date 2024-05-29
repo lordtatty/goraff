@@ -7,12 +7,12 @@ import (
 )
 
 type GraphNode struct {
-	Graph *goraff.Graph
+	Graph *goraff.Scaff
 }
 
-func (g *GraphNode) Do(s *goraff.StateNode, r *goraff.GraphStateReader, triggeringNS *goraff.StateNodeReader) error {
+func (g *GraphNode) Do(s *goraff.Node, r *goraff.ReadableGraph, triggeringNS *goraff.ReadableNode) error {
 	fmt.Println("Running Graph Node")
-	sub := g.Graph.State()
+	sub := g.Graph.Graph()
 	s.SetSubGraph(sub)
 	g.Graph.Go()
 	return nil

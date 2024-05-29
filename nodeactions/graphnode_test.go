@@ -11,23 +11,23 @@ import (
 func TestGraphNode_Do(t *testing.T) {
 	assert := assert.New(t)
 
-	subgraph := &goraff.Graph{}
-	substate := subgraph.State()
-	input1 := subgraph.AddNodeWithName("input1", &nodeactions.Input{Value: "value1"})
+	subgraph := &goraff.Scaff{}
+	substate := subgraph.Graph()
+	input1 := subgraph.AddBlockWithName("input1", &nodeactions.Input{Value: "value1"})
 	subgraph.SetEntrypoint(input1)
 
 	sut := &nodeactions.GraphNode{
 		Graph: subgraph,
 	}
 
-	graph := goraff.New()
-	n1 := graph.AddNode(sut)
+	graph := goraff.NewScaff()
+	n1 := graph.AddBlock(sut)
 	graph.SetEntrypoint(n1)
 
 	err := graph.Go()
 	assert.Nil(err)
 
-	node := graph.State().FirstNodeStateByName(n1)
+	node := graph.Graph().FirstNodeStateByName(n1)
 	sub := node.Reader().SubGraph()
 	assert.Equal(substate.Reader(), sub)
 	n, err := sub.FirstNodeStateByName(input1)

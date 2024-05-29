@@ -9,7 +9,7 @@ import (
 type Print struct {
 }
 
-func (p *Print) Do(s *goraff.StateNode, r *goraff.GraphStateReader, triggeringNode *goraff.StateNodeReader) error {
+func (p *Print) Do(s *goraff.Node, r *goraff.ReadableGraph, triggeringNode *goraff.ReadableNode) error {
 	if triggeringNode == nil {
 		log.Println("Node triggered by nil")
 		return nil

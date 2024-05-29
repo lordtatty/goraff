@@ -34,7 +34,7 @@ type GraphOutput struct {
 type Outputter struct {
 }
 
-func (o *Outputter) Output(s *goraff.GraphStateReader) *Output {
+func (o *Outputter) Output(s *goraff.ReadableGraph) *Output {
 	st, err := o.allStates(s)
 	if err != nil {
 		fmt.Println("error getting node state")
@@ -53,7 +53,7 @@ func (o *Outputter) Output(s *goraff.GraphStateReader) *Output {
 	return out
 }
 
-func (o *Outputter) allStates(s *goraff.GraphStateReader) ([]GraphOutput, error) {
+func (o *Outputter) allStates(s *goraff.ReadableGraph) ([]GraphOutput, error) {
 	st, err := o.state(s)
 	if err != nil {
 		return nil, fmt.Errorf("error getting node state: %w", err)
@@ -62,7 +62,7 @@ func (o *Outputter) allStates(s *goraff.GraphStateReader) ([]GraphOutput, error)
 		*st,
 	}
 	for _, ns := range s.NodeIDs() {
-		n, err := s.NodeState(ns)
+		n, err := s.Node(ns)
 		if err != nil {
 			return nil, fmt.Errorf("error getting node state: %w", err)
 		}
@@ -78,10 +78,10 @@ func (o *Outputter) allStates(s *goraff.GraphStateReader) ([]GraphOutput, error)
 	return states, nil
 }
 
-func (o *Outputter) state(s *goraff.GraphStateReader) (*GraphOutput, error) {
+func (o *Outputter) state(s *goraff.ReadableGraph) (*GraphOutput, error) {
 	nodeIDs := []string{}
 	for _, ns := range s.NodeIDs() {
-		n, err := s.NodeState(ns)
+		n, err := s.Node(ns)
 		if err != nil {
 			return nil, fmt.Errorf("error getting node state: %w", err)
 		}
@@ -93,10 +93,10 @@ func (o *Outputter) state(s *goraff.GraphStateReader) (*GraphOutput, error) {
 	}, nil
 }
 
-func (o *Outputter) allNodes(s *goraff.GraphStateReader) ([]NodeOutput, error) {
+func (o *Outputter) allNodes(s *goraff.ReadableGraph) ([]NodeOutput, error) {
 	nodes := []NodeOutput{}
 	for _, ns := range s.NodeIDs() {
-		n, err := s.NodeState(ns)
+		n, err := s.Node(ns)
 		if err != nil {
 			return nil, fmt.Errorf("error getting node state: %w", err)
 		}
@@ -113,7 +113,7 @@ func (o *Outputter) allNodes(s *goraff.GraphStateReader) ([]NodeOutput, error) {
 	return nodes, nil
 }
 
-func (o *Outputter) node(ns *goraff.StateNodeReader) *NodeOutput {
+func (o *Outputter) node(ns *goraff.ReadableNode) *NodeOutput {
 	vals := []NodeOutputVal{}
 	for k, v := range ns.State() {
 		vals = append(vals, NodeOutputVal{Name: k, Value: string(v)})
@@ -131,10 +131,10 @@ func (o *Outputter) node(ns *goraff.StateNodeReader) *NodeOutput {
 }
 
 // TODO - test this
-func BroadcastChanges(g *goraff.Graph, ws *websocket.WebSocketServer) {
-	g.State().Notifier().Listen(func(c goraff.StateChangeNotification) {
+func BroadcastChanges(g *goraff.Scaff, ws *websocket.WebSocketServer) {
+	g.Graph().Notifier().Listen(func(c goraff.StateChangeNotification) {
 		out := Outputter{}
-		s := g.State().Reader()
+		s := g.Graph().Reader()
 		o := out.Output(s)
 		snd, err := json.Marshal(o)
 		if err != nil {
@@ -146,10 +146,10 @@ func BroadcastChanges(g *goraff.Graph, ws *websocket.WebSocketServer) {
 }
 
 // TODO - test this
-func PrintUpdatesToConsole(g *goraff.Graph) {
-	g.State().Notifier().Listen(func(c goraff.StateChangeNotification) {
+func PrintUpdatesToConsole(g *goraff.Scaff) {
+	g.Graph().Notifier().Listen(func(c goraff.StateChangeNotification) {
 		out := Outputter{}
-		s := g.State().Reader()
+		s := g.Graph().Reader()
 		o := out.Output(s)
 		fmt.Println("##########################################")
 		fmt.Println("##########################################")
