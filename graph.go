@@ -72,7 +72,7 @@ func (s *ReadableGraph) NodeByID(id string) (*ReadableNode, error) {
 	if r == nil {
 		return nil, fmt.Errorf("Node state with id %s not found", id)
 	}
-	return &ReadableNode{r}, nil
+	return &ReadableNode{node: r}, nil
 }
 
 func (s *ReadableGraph) FirstNodeStateByName(name string) (*ReadableNode, error) {
@@ -80,7 +80,7 @@ func (s *ReadableGraph) FirstNodeStateByName(name string) (*ReadableNode, error)
 	if st == nil {
 		return nil, fmt.Errorf("Node state with name %s not found", name)
 	}
-	return &ReadableNode{st}, nil
+	return &ReadableNode{node: st}, nil
 }
 
 func (s *ReadableGraph) Node(id string) (*ReadableNode, error) {
@@ -88,7 +88,7 @@ func (s *ReadableGraph) Node(id string) (*ReadableNode, error) {
 	if r == nil {
 		return nil, fmt.Errorf("Node state with id %s not found", id)
 	}
-	return &ReadableNode{r}, nil
+	return &ReadableNode{node: r}, nil
 }
 
 func (s *ReadableGraph) NodeIDs() []string {
