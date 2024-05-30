@@ -162,7 +162,7 @@ func TestGraph_AddEdge_Node1NotFound(t *testing.T) {
 	g := &goraff.Scaff{}
 	err := g.AddEdge("node1", "node2", nil)
 	assert.Error(err)
-	assert.Equal("node not found: node1", err.Error())
+	assert.Equal("block not found: node1", err.Error())
 }
 
 func TestGraph_AddEdge_Node2NotFound(t *testing.T) {
@@ -172,7 +172,7 @@ func TestGraph_AddEdge_Node2NotFound(t *testing.T) {
 	n1 := g.AddBlock(a1)
 	err := g.AddEdge(n1, "node2", nil)
 	assert.Error(err)
-	assert.Equal("node not found: node2", err.Error())
+	assert.Equal("block not found: node2", err.Error())
 }
 
 func TestGraph_FanOutNodes_Parallel(t *testing.T) {

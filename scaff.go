@@ -64,7 +64,7 @@ type ErrBlockNotFound struct {
 }
 
 func (e ErrBlockNotFound) Error() string {
-	return "node not found: " + e.ID
+	return "block not found: " + e.ID
 }
 
 func (g *Scaff) AddEdge(fromID, toID string, condition FollowIf) error {
