@@ -308,3 +308,52 @@ func TestGraph_FlowMgr_ReaderPassing(t *testing.T) {
 	assert.Equal("reader is nil", graph.FirstNodeStateByName(n1).Reader().GetStr("check_reader_key"))
 	assert.Equal("reader is not nil", graph.FirstNodeStateByName(n2).Reader().GetStr("check_reader_key"))
 }
+
+func TestGraph_Go_ValidateEntrypoint(t *testing.T) {
+	assert := assert.New(t)
+	g := &goraff.Scaff{}
+
+	a1 := &actionMock{name: "action1"}
+	g.AddBlock("action1", a1)
+	a2 := &actionMock{name: "action2", lastName: "action1"}
+	g.AddBlock("action2", a2)
+
+	// No entrypoint set
+	graph := &goraff.Graph{}
+	err := g.Go(graph)
+	assert.Error(err)
+	assert.Equal("error validating graph: entrypoint not set", err.Error())
+}
+
+func TestGraph_Go_ValidateUniqueBlockNames(t *testing.T) {
+	assert := assert.New(t)
+	g := &goraff.Scaff{}
+
+	a1 := &actionMock{name: "action1"}
+	n1 := g.AddBlock("action1", a1)
+	a2 := &actionMock{name: "action1"}
+	g.AddBlock("action1", a2)
+
+	g.SetEntrypoint(n1)
+	graph := &goraff.Graph{}
+	err := g.Go(graph)
+	assert.Error(err)
+	assert.Equal("error validating graph: block name not unique: action1", err.Error())
+}
+
+func TestGraph_Go_ValidateEdgeNotFound(t *testing.T) {
+	assert := assert.New(t)
+	g := &goraff.Scaff{}
+
+	a1 := &actionMock{name: "action1"}
+	n1 := g.AddBlock("action1", a1)
+	a2 := &actionMock{name: "action2"}
+	g.AddBlock("action2", a2)
+
+	g.SetEntrypoint(n1)
+
+	graph := &goraff.Graph{}
+	err := g.Go(graph)
+	assert.Error(err)
+	assert.Equal("error validating graph: block has no edges: action1", err.Error())
+}

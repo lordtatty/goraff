@@ -84,8 +84,33 @@ func (g *Scaff) Go(graph *Graph) error {
 	if graph == nil {
 		return fmt.Errorf("graph not provided")
 	}
+	err := g.validate()
+	if err != nil {
+		return fmt.Errorf("error validating graph: %w", err)
+	}
 	g.state = graph
 	return g.flowMgr()
+}
+
+func (g *Scaff) validate() error {
+	if g.entrypoint == nil {
+		return fmt.Errorf("entrypoint not set")
+	}
+	// check block names are unique
+	names := map[string]struct{}{}
+	for _, b := range g.blocks {
+		if _, ok := names[b.Name]; ok {
+			return fmt.Errorf("block name not unique: %s", b.Name)
+		}
+		names[b.Name] = struct{}{}
+	}
+	// check all blocks have an edge
+	for _, b := range g.blocks {
+		if _, ok := g.edges[b.Name]; !ok {
+			return fmt.Errorf("block has no edges: %s", b.Name)
+		}
+	}
+	return nil
 }
 
 type nextBlock struct {
