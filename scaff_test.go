@@ -17,15 +17,6 @@ func TestNew(t *testing.T) {
 	assert.Equal(goraff.Scaff{}, *g)
 }
 
-func TestGraph_AddNode(t *testing.T) {
-	assert := assert.New(t)
-	g := &goraff.Scaff{}
-	a := &actionMock{name: "action1"}
-	g.AddBlock(a)
-	// The graph should have one node
-	assert.Equal(1, g.Len())
-}
-
 type actionMock struct {
 	name        string
 	lastName    string
@@ -68,8 +59,8 @@ func TestGraph_Go_NoEdges(t *testing.T) {
 	a1 := &actionMock{name: "action1"}
 	a2 := &actionMock{name: "action2", lastName: "action1", expectNoRun: true, t: t}
 
-	n1 := g.AddBlockWithName("action1", a1)
-	_ = g.AddBlockWithName("action1", a2)
+	n1 := g.AddBlock("action1", a1)
+	_ = g.AddBlock("action1", a2)
 	g.SetEntrypoint(n1)
 	graph := &goraff.Graph{}
 	err := g.Go(graph)
@@ -89,8 +80,8 @@ func TestGraph_NodeHasError(t *testing.T) {
 	a1 := &actionMock{name: "action1"}
 	a2 := &actionMock{name: "action2", lastName: "action1", err: fmt.Errorf("error"), t: t}
 
-	n1 := g.AddBlock(a1)
-	n2 := g.AddBlock(a2)
+	n1 := g.AddBlock("action1", a1)
+	n2 := g.AddBlock("action2", a2)
 
 	g.AddEdge(n1, n2, nil)
 
@@ -106,13 +97,13 @@ func TestGraph_Go_WithEdges(t *testing.T) {
 	g := &goraff.Scaff{}
 
 	a1 := &actionMock{name: "action1"}
-	n1 := g.AddBlockWithName("action1", a1)
+	n1 := g.AddBlock("action1", a1)
 	a2 := &actionMock{name: "action2", lastName: "action1"}
-	n2 := g.AddBlockWithName("action2", a2)
+	n2 := g.AddBlock("action2", a2)
 	a3 := &actionMock{name: "action3", lastName: "action2"}
-	n3 := g.AddBlockWithName("action3", a3)
+	n3 := g.AddBlock("action3", a3)
 	a4 := &actionMock{name: "action4", expectNoRun: true, t: t}
-	g.AddBlockWithName("action4", a4) // thi should not run
+	g.AddBlock("action4", a4) // thi should not run
 
 	g.SetEntrypoint(n1)
 	// with no condition we always follow the edge
@@ -137,11 +128,11 @@ func TestGraph_ConditionalEdges(t *testing.T) {
 	g := &goraff.Scaff{}
 
 	a1 := &actionMock{name: "action1"}
-	n1 := g.AddBlock(a1)
+	n1 := g.AddBlock("action1", a1)
 	a2 := &actionMock{name: "action2", lastName: "action1", expectNoRun: true, t: t}
-	n2 := g.AddBlock(a2)
+	n2 := g.AddBlock("action2", a2)
 	a3 := &actionMock{name: "action3", lastName: "action1"}
-	n3 := g.AddBlock(a3)
+	n3 := g.AddBlock("action3", a3)
 
 	g.SetEntrypoint(n1)
 	// Both n2 and n3 should follow n1, but only n3 should match the condition
@@ -169,7 +160,7 @@ func TestGraph_AddEdge_Node2NotFound(t *testing.T) {
 	assert := assert.New(t)
 	g := &goraff.Scaff{}
 	a1 := &actionMock{name: "action1"}
-	n1 := g.AddBlock(a1)
+	n1 := g.AddBlock("action1", a1)
 	err := g.AddEdge(n1, "node2", nil)
 	assert.Error(err)
 	assert.Equal("block not found: node2", err.Error())
@@ -185,13 +176,13 @@ func TestGraph_FanOutNodes_Parallel(t *testing.T) {
 	g := &goraff.Scaff{}
 
 	a1 := &actionMock{name: "action1", delay: 1 * time.Second}
-	n1 := g.AddBlock(a1)
+	n1 := g.AddBlock("action1", a1)
 	a2 := &actionMock{name: "action2", lastName: "action1", delay: 1 * time.Second}
-	n2 := g.AddBlock(a2)
+	n2 := g.AddBlock("action2", a2)
 	a3 := &actionMock{name: "action3", lastName: "action1", delay: 1 * time.Second}
-	n3 := g.AddBlock(a3)
+	n3 := g.AddBlock("action3", a3)
 	a4 := &actionMock{name: "action4", lastName: "action1", delay: 1 * time.Second}
-	n4 := g.AddBlock(a4)
+	n4 := g.AddBlock("action4", a4)
 
 	g.SetEntrypoint(n1)
 	g.AddEdge(n1, n2, nil)
@@ -238,11 +229,11 @@ func TestGraph_StateIsMarkedDoneBeforeTriggers(t *testing.T) {
 	g := &goraff.Scaff{}
 
 	a1 := &actionMock{name: "action1"}
-	n1 := g.AddBlock(a1)
+	n1 := g.AddBlock("action1", a1)
 	a2 := &actionMock{name: "action2", lastName: "action1"}
-	n2 := g.AddBlock(a2)
+	n2 := g.AddBlock("action2", a2)
 	a3 := &actionMock{name: "action3", lastName: "action2"}
-	n3 := g.AddBlock(a3)
+	n3 := g.AddBlock("action3", a3)
 
 	g.SetEntrypoint(n1)
 	g.AddEdge(n1, n2, nil)
@@ -298,14 +289,14 @@ func TestGraph_FlowMgr_ReaderPassing(t *testing.T) {
 		expectNilReader: true,
 		t:               t,
 	}
-	n1 := g.AddBlock(checkReaderAction1)
+	n1 := g.AddBlock("action1", checkReaderAction1)
 
 	// Define another action mock that will be triggered by the first and expects a non-nil reader
 	checkReaderAction2 := &actionMockCheckReader{
 		expectNilReader: false,
 		t:               t,
 	}
-	n2 := g.AddBlock(checkReaderAction2)
+	n2 := g.AddBlock("action2", checkReaderAction2)
 
 	g.SetEntrypoint(n1)
 	g.AddEdge(n1, n2, nil)

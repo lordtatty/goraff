@@ -3,8 +3,6 @@ package goraff
 import (
 	"fmt"
 	"sync"
-
-	"github.com/google/uuid"
 )
 
 type BlockAction interface {
@@ -30,16 +28,7 @@ func NewScaff() *Scaff {
 	return &Scaff{}
 }
 
-func (g *Scaff) Len() int {
-	return len(g.blocks)
-}
-
-func (g *Scaff) AddBlock(a BlockAction) string {
-	id := uuid.New().String()
-	return g.AddBlockWithName(id, a)
-}
-
-func (g *Scaff) AddBlockWithName(name string, a BlockAction) string {
+func (g *Scaff) AddBlock(name string, a BlockAction) string {
 	n := &Block{Action: a, Name: name}
 	g.blocks = append(g.blocks, n)
 	return n.Name
