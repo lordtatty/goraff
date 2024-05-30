@@ -43,12 +43,12 @@ func (g *Scaff) StateReadOnly() *ReadableGraph {
 	return g.state.Reader()
 }
 
-func (g *Scaff) Graph() *Graph {
-	if g.state == nil {
-		g.state = &Graph{}
-	}
-	return g.state
-}
+// func (g *Scaff) Graph() *Graph {
+// 	if g.state == nil {
+// 		g.state = &Graph{}
+// 	}
+// 	return g.state
+// }
 
 func (g *Scaff) Len() int {
 	return len(g.blocks)
@@ -111,10 +111,11 @@ func (g *Scaff) AddEdge(fromID, toID string, condition FollowIf) error {
 	return nil
 }
 
-func (g *Scaff) Go() error {
-	if g.state == nil {
-		g.state = &Graph{}
+func (g *Scaff) Go(graph *Graph) error {
+	if graph == nil {
+		return fmt.Errorf("graph not provided")
 	}
+	g.state = graph
 	return g.flowMgr()
 }
 

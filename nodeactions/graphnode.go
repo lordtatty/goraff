@@ -6,14 +6,14 @@ import (
 	"github.com/lordtatty/goraff"
 )
 
-type GraphNode struct {
-	Graph *goraff.Scaff
+type ScaffNode struct {
+	Scaff *goraff.Scaff
 }
 
-func (g *GraphNode) Do(s *goraff.Node, r *goraff.ReadableGraph, triggeringNS *goraff.ReadableNode) error {
+func (g *ScaffNode) Do(s *goraff.Node, r *goraff.ReadableGraph, triggeringNS *goraff.ReadableNode) error {
 	fmt.Println("Running Graph Node")
-	sub := g.Graph.Graph()
-	s.SetSubGraph(sub)
-	g.Graph.Go()
+	graph := &goraff.Graph{}
+	s.SetSubGraph(graph)
+	g.Scaff.Go(graph)
 	return nil
 }
