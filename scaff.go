@@ -30,25 +30,12 @@ func NewScaff() *Scaff {
 	return &Scaff{}
 }
 
-func NewWithGraph(s *Graph) *Scaff {
-	return &Scaff{
-		state: s,
-	}
-}
-
 func (g *Scaff) StateReadOnly() *ReadableGraph {
 	if g.state == nil {
 		g.state = &Graph{}
 	}
 	return g.state.Reader()
 }
-
-// func (g *Scaff) Graph() *Graph {
-// 	if g.state == nil {
-// 		g.state = &Graph{}
-// 	}
-// 	return g.state
-// }
 
 func (g *Scaff) Len() int {
 	return len(g.blocks)
