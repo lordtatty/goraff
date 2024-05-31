@@ -10,29 +10,30 @@ import (
 
 func TestOutputter(t *testing.T) {
 	assert := assert.New(t)
-	substate := &goraff.Graph{}
-	subnode := substate.NewNodeState("subnode")
+	subgraph := &goraff.Graph{}
+	subnode := subgraph.NewNodeState("subnode")
 	subnode.SetStr("key1", "value1")
+	subgraphReadable := goraff.NewReadableGraph(subgraph)
 
-	s := goraff.Graph{}
-	n1 := s.NewNodeState("node1")
+	g := &goraff.Graph{}
+	n1 := g.NewNodeState("node1")
 	n1.SetStr("key2", "value2")
-	n1.SetSubGraph(substate)
+	n1.SetSubGraph(subgraph)
 
-	r := s.Reader()
+	r := goraff.NewReadableGraph(g)
 
 	sut := &outputs.Outputter{}
 	result := sut.Output(r)
 
 	want := &outputs.Output{
-		PrimaryStateID: s.Reader().ID(),
+		PrimaryStateID: r.ID(),
 		States: []outputs.GraphOutput{
 			{
-				ID:      s.Reader().ID(),
+				ID:      r.ID(),
 				NodeIDs: []string{n1.Reader().ID()},
 			},
 			{
-				ID:      substate.Reader().ID(),
+				ID:      subgraphReadable.ID(),
 				NodeIDs: []string{subnode.Reader().ID()},
 			},
 		},
@@ -43,7 +44,7 @@ func TestOutputter(t *testing.T) {
 				Vals: []outputs.NodeOutputVal{
 					{Name: "key2", Value: "value2"},
 				},
-				SubGraphID: substate.Reader().ID(),
+				SubGraphID: subgraphReadable.ID(),
 			},
 			{
 				ID:   subnode.Reader().ID(),

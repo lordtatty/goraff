@@ -73,12 +73,12 @@ func TestState_NodeStateByID(t *testing.T) {
 
 func TestState_StateReadOnly(t *testing.T) {
 	assert := assert.New(t)
-	s := goraff.Graph{}
+	s := &goraff.Graph{}
 	// Test that this creates a new node state
 	n := s.NewNodeState("node1")
 	n.SetStr("key1", "value1")
 	n.SetStr("key2", "value2")
-	r := s.Reader()
+	r := goraff.NewReadableGraph(s)
 	nr, err := r.Node(n.Reader().ID())
 	assert.Nil(err)
 	assert.Equal("value1", nr.GetStr("key1"))
@@ -87,12 +87,12 @@ func TestState_StateReadOnly(t *testing.T) {
 
 func TestState_StateReadOnly_ID(t *testing.T) {
 	assert := assert.New(t)
-	s := goraff.Graph{}
+	s := &goraff.Graph{}
 	// Test that this creates a new node state
 	n := s.NewNodeState("node1")
 	n.SetStr("key1", "value1")
 	n.SetStr("key2", "value2")
-	r := s.Reader()
+	r := goraff.NewReadableGraph(s)
 	nr, err := r.Node(n.Reader().ID())
 	assert.Nil(err)
 	assert.Equal("node1", nr.Name())
@@ -110,7 +110,7 @@ func TestState_Notifier(t *testing.T) {
 
 func TestStateReader_ID(t *testing.T) {
 	assert := assert.New(t)
-	s := goraff.Graph{}
-	r := s.Reader()
+	s := &goraff.Graph{}
+	r := goraff.NewReadableGraph(s)
 	assert.Regexp("^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$", r.ID())
 }

@@ -104,12 +104,6 @@ func (g *Scaff) validate() error {
 		}
 		names[b.Name] = struct{}{}
 	}
-	// check all blocks have an edge
-	for _, b := range g.blocks {
-		if _, ok := g.edges[b.Name]; !ok {
-			return fmt.Errorf("block has no edges: %s", b.Name)
-		}
-	}
 	return nil
 }
 
@@ -174,7 +168,7 @@ func (g *Scaff) flowMgr() error {
 
 func (g *Scaff) runBlock(n *Block, triggeringNS *ReadableNode) ([]*Block, *Node, error) {
 	s := g.state.NewNodeState(n.Name)
-	r := g.state.Reader()
+	r := NewReadableGraph(g.state)
 	err := n.Action.Do(s, r, triggeringNS)
 	if err != nil {
 		return nil, nil, err

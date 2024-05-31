@@ -58,8 +58,8 @@ func (s *Graph) NodeByID(id string) *Node {
 	return nil
 }
 
-func (s *Graph) Reader() *ReadableGraph {
-	return &ReadableGraph{s}
+func NewReadableGraph(g *Graph) *ReadableGraph {
+	return &ReadableGraph{g}
 }
 
 // ReadableGraph is a read only view of the state

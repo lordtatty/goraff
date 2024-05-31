@@ -35,11 +35,12 @@ func TestNode_SetSubGraph(t *testing.T) {
 	assert := assert.New(t)
 	n := &goraff.Node{}
 	s := &goraff.Graph{}
+	r := goraff.NewReadableGraph(s)
 	n.SetSubGraph(s)
 
 	subGraph := n.Reader().SubGraph()
 	assert.NotNil(subGraph)
-	assert.Equal(s.Reader().ID(), subGraph.ID())
+	assert.Equal(r.ID(), subGraph.ID())
 }
 
 func TestNode_Set(t *testing.T) {

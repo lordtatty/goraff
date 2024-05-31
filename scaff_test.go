@@ -60,7 +60,7 @@ func TestGraph_Go_NoEdges(t *testing.T) {
 	a2 := &actionMock{name: "action2", lastName: "action1", expectNoRun: true, t: t}
 
 	n1 := g.AddBlock("action1", a1)
-	_ = g.AddBlock("action1", a2)
+	_ = g.AddBlock("action2", a2)
 	g.SetEntrypoint(n1)
 	graph := &goraff.Graph{}
 	err := g.Go(graph)
@@ -257,7 +257,7 @@ func TestGraph_EntrypointNotSet(t *testing.T) {
 	err := g.Go(graph)
 
 	assert.Error(err)
-	assert.Equal("entrypoint not set", err.Error())
+	assert.Equal("error validating graph: entrypoint not set", err.Error())
 }
 
 type actionMockCheckReader struct {
@@ -339,21 +339,4 @@ func TestGraph_Go_ValidateUniqueBlockNames(t *testing.T) {
 	err := g.Go(graph)
 	assert.Error(err)
 	assert.Equal("error validating graph: block name not unique: action1", err.Error())
-}
-
-func TestGraph_Go_ValidateEdgeNotFound(t *testing.T) {
-	assert := assert.New(t)
-	g := &goraff.Scaff{}
-
-	a1 := &actionMock{name: "action1"}
-	n1 := g.AddBlock("action1", a1)
-	a2 := &actionMock{name: "action2"}
-	g.AddBlock("action2", a2)
-
-	g.SetEntrypoint(n1)
-
-	graph := &goraff.Graph{}
-	err := g.Go(graph)
-	assert.Error(err)
-	assert.Equal("error validating graph: block has no edges: action1", err.Error())
 }
