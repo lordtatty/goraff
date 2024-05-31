@@ -65,11 +65,11 @@ func NewReadableGraph(g *Graph) *ReadableGraph {
 
 // ReadableGraph is a read only view of the state
 type ReadableGraph struct {
-	state *Graph
+	graph *Graph
 }
 
 func (s *ReadableGraph) NodeByID(id string) (*ReadableNode, error) {
-	r := s.state.NodeByID(id)
+	r := s.graph.NodeByID(id)
 	if r == nil {
 		return nil, fmt.Errorf("Node state with id %s not found", id)
 	}
@@ -77,7 +77,7 @@ func (s *ReadableGraph) NodeByID(id string) (*ReadableNode, error) {
 }
 
 func (s *ReadableGraph) FirstNodeByName(name string) (*ReadableNode, error) {
-	st := s.state.FirstNodeByName(name)
+	st := s.graph.FirstNodeByName(name)
 	if st == nil {
 		return nil, fmt.Errorf("Node state with name %s not found", name)
 	}
@@ -85,7 +85,7 @@ func (s *ReadableGraph) FirstNodeByName(name string) (*ReadableNode, error) {
 }
 
 func (s *ReadableGraph) Node(id string) (*ReadableNode, error) {
-	r := s.state.NodeByID(id)
+	r := s.graph.NodeByID(id)
 	if r == nil {
 		return nil, fmt.Errorf("Node state with id %s not found", id)
 	}
@@ -94,16 +94,16 @@ func (s *ReadableGraph) Node(id string) (*ReadableNode, error) {
 
 func (s *ReadableGraph) NodeIDs() []string {
 	ids := []string{}
-	for _, ns := range s.state.nodes {
+	for _, ns := range s.graph.nodes {
 		ids = append(ids, ns.Reader().ID())
 	}
 	return ids
 }
 
 func (s *ReadableGraph) ID() string {
-	if s.state.id == "" {
+	if s.graph.id == "" {
 		id := uuid.New().String()
-		s.state.id = id
+		s.graph.id = id
 	}
-	return s.state.id
+	return s.graph.id
 }
