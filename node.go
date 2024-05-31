@@ -12,7 +12,7 @@ type Node struct {
 	name     string
 	state    map[string][]byte
 	done     bool
-	notifier *GraphNotifier
+	notifier ChangeNotifier
 	subGraph *Graph
 	mut      sync.Mutex
 }
@@ -20,7 +20,7 @@ type Node struct {
 func (n *Node) SetSubGraph(s *Graph) {
 	n.mut.Lock()
 	defer n.mut.Unlock()
-	s.notifier = n.notifier
+	s.Notifier = n.notifier
 	n.subGraph = s
 }
 
@@ -36,7 +36,7 @@ func (n *Node) Set(key string, value []byte) {
 	n.state[key] = value
 	n.mut.Unlock()
 	if n.notifier != nil {
-		n.notifier.Notify(StateChangeNotification{NodeID: n.id})
+		n.notifier.Notify(StateChangeNotification{NodeID: n.name})
 	}
 }
 

@@ -47,9 +47,10 @@ func TestLLM_Do(t *testing.T) {
 		Client:    mClient,
 	}
 	msgIdx := 0
-	s := &goraff.Graph{}
+	ntfy := &goraff.GraphNotifier{}
+	s := &goraff.Graph{Notifier: ntfy}
 	r := goraff.NewReadableGraph(s)
-	s.Notifier().Listen(func(ntfy goraff.StateChangeNotification) {
+	ntfy.Listen(func(ntfy goraff.StateChangeNotification) {
 		msgIdx++
 		want := strings.Join(expectedMessages[:msgIdx], "")
 		n, err := r.FirstNodeStateByName("node1")

@@ -6,23 +6,20 @@ import (
 	"github.com/google/uuid"
 )
 
+type ChangeNotifier interface {
+	Notify(notification StateChangeNotification)
+}
+
 // Graph manages the state of all nodes in the graph
 type Graph struct {
 	id       string
 	nodes    []*Node
-	notifier *GraphNotifier
-}
-
-func (s *Graph) Notifier() *GraphNotifier {
-	if s.notifier == nil {
-		s.notifier = &GraphNotifier{}
-	}
-	return s.notifier
+	Notifier ChangeNotifier
 }
 
 func (s *Graph) NewNodeState(name string) *Node {
 	// Else create a new node state
-	ns := &Node{name: name, notifier: s.notifier}
+	ns := &Node{name: name, notifier: s.Notifier}
 	s.nodes = append(s.nodes, ns)
 	return ns
 }

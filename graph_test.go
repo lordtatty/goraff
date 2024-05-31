@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/lordtatty/goraff"
+	"github.com/lordtatty/goraff/mocks"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -99,13 +100,20 @@ func TestState_StateReadOnly_ID(t *testing.T) {
 }
 
 func TestState_Notifier(t *testing.T) {
-	assert := assert.New(t)
-	s := goraff.Graph{}
-	assert.NotNil(s.Notifier())
-	// assert that the returned notifier is of type StateNotifier
-	n := s.Notifier()
-	assert.IsType(&goraff.GraphNotifier{}, n)
+	// Make sure this fires when updating a node
+	mNotifier := mocks.NewChangeNotifier(t)
+	mNotifier.EXPECT().Notify(goraff.StateChangeNotification{NodeID: "node1"}).Times(1)
+	// And let's check a second node too to be sure
+	mNotifier.EXPECT().Notify(goraff.StateChangeNotification{NodeID: "node2"}).Times(1)
 
+	// Create the SUT and trigger the first node to update
+	s := &goraff.Graph{Notifier: mNotifier}
+	n := s.NewNodeState("node1")
+	n.SetStr("key", "value")
+
+	// Trigger the second node to update
+	n2 := s.NewNodeState("node2")
+	n2.SetStr("key", "value")
 }
 
 func TestStateReader_ID(t *testing.T) {
