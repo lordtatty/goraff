@@ -6,6 +6,10 @@ import (
 	"github.com/google/uuid"
 )
 
+type StateChangeNotification struct {
+	NodeID string
+}
+
 type ChangeNotifier interface {
 	Notify(notification StateChangeNotification)
 }

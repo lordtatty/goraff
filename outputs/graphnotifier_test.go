@@ -1,10 +1,11 @@
-package goraff_test
+package outputs_test
 
 import (
 	"sync"
 	"testing"
 
 	"github.com/lordtatty/goraff"
+	"github.com/lordtatty/goraff/outputs"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -12,7 +13,7 @@ func TestGraphNotifier_ListenAndNotify(t *testing.T) {
 	var wg sync.WaitGroup
 
 	// Create a new GraphNotifier instance
-	notifier := &goraff.GraphNotifier{}
+	notifier := &outputs.GraphNotifier{}
 
 	// Define a callback function and a variable to capture the notification
 	var receivedNotification goraff.StateChangeNotification
@@ -42,7 +43,7 @@ func TestGraphNotifier_MultipleCallbacks(t *testing.T) {
 	var wg sync.WaitGroup
 
 	// Create a new GraphNotifier instance
-	notifier := &goraff.GraphNotifier{}
+	notifier := &outputs.GraphNotifier{}
 
 	// Define callback functions and variables to capture notifications
 	receivedNotifications := make([]goraff.StateChangeNotification, 2)
@@ -76,7 +77,7 @@ func TestGraphNotifier_MultipleCallbacks(t *testing.T) {
 
 func TestGraphNotifier_NoCallbacks(t *testing.T) {
 	// Create a new GraphNotifier instance
-	notifier := &goraff.GraphNotifier{}
+	notifier := &outputs.GraphNotifier{}
 
 	// Create a notification
 	notification := goraff.StateChangeNotification{NodeID: "node123"}
@@ -89,7 +90,7 @@ func TestGraphNotifier_NoCallbacks(t *testing.T) {
 
 func TestGraphNotifier_NilCallback(t *testing.T) {
 	// Create a new GraphNotifier instance
-	notifier := &goraff.GraphNotifier{}
+	notifier := &outputs.GraphNotifier{}
 
 	// Register a nil callback, this should not be added to the list of callbacks
 	notifier.Listen(nil)
@@ -107,7 +108,7 @@ func TestGraphNotifier_Concurrency(t *testing.T) {
 	var wg sync.WaitGroup
 
 	// Create a new GraphNotifier instance
-	notifier := &goraff.GraphNotifier{}
+	notifier := &outputs.GraphNotifier{}
 
 	const numCallbacks = 100
 	receivedNotifications := make([]goraff.StateChangeNotification, numCallbacks)
@@ -143,7 +144,7 @@ func TestGraphNotifier_EmptyNotification(t *testing.T) {
 	var wg sync.WaitGroup
 
 	// Create a new GraphNotifier instance
-	notifier := &goraff.GraphNotifier{}
+	notifier := &outputs.GraphNotifier{}
 
 	// Define a callback function and a variable to capture the notification
 	var receivedNotification goraff.StateChangeNotification
@@ -173,7 +174,7 @@ func TestGraphNotifier_SameCallbackMultipleTimes(t *testing.T) {
 	var wg sync.WaitGroup
 
 	// Create a new GraphNotifier instance
-	notifier := &goraff.GraphNotifier{}
+	notifier := &outputs.GraphNotifier{}
 
 	// Define a callback function and a counter to track how many times it's called
 	callCount := 0
@@ -206,7 +207,7 @@ func TestGraphNotifier_CallbackOrder(t *testing.T) {
 	var wg sync.WaitGroup
 
 	// Create a new GraphNotifier instance
-	notifier := &goraff.GraphNotifier{}
+	notifier := &outputs.GraphNotifier{}
 
 	// Define callback functions and an array to capture the order of calls
 	callOrder := []int{}
