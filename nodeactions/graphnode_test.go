@@ -28,9 +28,9 @@ func TestGraphNode_Do(t *testing.T) {
 	err := scaff.Go(graph)
 	assert.Nil(err)
 
-	node := graph.FirstNodeStateByName(n1)
+	node := graph.FirstNodeByName(n1)
 	sub := node.Reader().SubGraph()
-	n, err := sub.FirstNodeStateByName(input1)
+	n, err := sub.FirstNodeByName(input1)
 	assert.Nil(err)
 	assert.Equal("value1", n.GetStr("result"))
 }

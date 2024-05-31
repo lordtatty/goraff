@@ -44,12 +44,12 @@ func (l *LLM) Do(s *goraff.Node, r *goraff.ReadableGraph, triggeringNode *goraff
 func (l *LLM) buildIncludes(r *goraff.ReadableGraph) (string, error) {
 	result := ""
 	for _, output := range l.IncludeOutputs {
-		n, err := r.FirstNodeStateByName(output)
+		n, err := r.FirstNodeByName(output)
 		if err != nil {
 			return "", fmt.Errorf("error getting node state: %w", err)
 		}
 		wants := n.GetStr("result")
-		n, err = r.FirstNodeStateByName(output)
+		n, err = r.FirstNodeByName(output)
 		if err != nil {
 			return "", fmt.Errorf("error getting node state: %w", err)
 		}

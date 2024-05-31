@@ -8,15 +8,15 @@ import (
 
 type GraphNotifier struct {
 	mu        sync.Mutex
-	callbacks []func(goraff.StateChangeNotification)
+	callbacks []func(goraff.GraphChangeNotification)
 }
 
 // Register adds a new callback function.
-func (n *GraphNotifier) Listen(callback func(goraff.StateChangeNotification)) {
+func (n *GraphNotifier) Listen(callback func(goraff.GraphChangeNotification)) {
 	n.mu.Lock()
 	defer n.mu.Unlock()
 	if n.callbacks == nil {
-		n.callbacks = make([]func(goraff.StateChangeNotification), 0)
+		n.callbacks = make([]func(goraff.GraphChangeNotification), 0)
 	}
 	if callback == nil {
 		return
@@ -25,7 +25,7 @@ func (n *GraphNotifier) Listen(callback func(goraff.StateChangeNotification)) {
 }
 
 // Notify triggers all registered callbacks with the given notification.
-func (n *GraphNotifier) Notify(notification goraff.StateChangeNotification) {
+func (n *GraphNotifier) Notify(notification goraff.GraphChangeNotification) {
 	n.mu.Lock()
 	defer n.mu.Unlock()
 	for _, callback := range n.callbacks {

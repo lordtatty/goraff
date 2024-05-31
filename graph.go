@@ -6,12 +6,12 @@ import (
 	"github.com/google/uuid"
 )
 
-type StateChangeNotification struct {
+type GraphChangeNotification struct {
 	NodeID string
 }
 
 type ChangeNotifier interface {
-	Notify(notification StateChangeNotification)
+	Notify(notification GraphChangeNotification)
 }
 
 // Graph manages the state of all nodes in the graph
@@ -21,14 +21,14 @@ type Graph struct {
 	Notifier ChangeNotifier
 }
 
-func (s *Graph) NewNodeState(name string) *Node {
+func (s *Graph) NewNode(name string) *Node {
 	// Else create a new node state
 	ns := &Node{name: name, notifier: s.Notifier}
 	s.nodes = append(s.nodes, ns)
 	return ns
 }
 
-func (s *Graph) NodeStateByName(name string) []*Node {
+func (s *Graph) NodeByName(name string) []*Node {
 	// First see if we have this node state
 	result := []*Node{}
 	for _, ns := range s.nodes {
@@ -39,7 +39,7 @@ func (s *Graph) NodeStateByName(name string) []*Node {
 	return result
 }
 
-func (s *Graph) FirstNodeStateByName(name string) *Node {
+func (s *Graph) FirstNodeByName(name string) *Node {
 	// First see if we have this node state
 	for _, ns := range s.nodes {
 		if ns.name == name {
@@ -76,8 +76,8 @@ func (s *ReadableGraph) NodeByID(id string) (*ReadableNode, error) {
 	return &ReadableNode{node: r}, nil
 }
 
-func (s *ReadableGraph) FirstNodeStateByName(name string) (*ReadableNode, error) {
-	st := s.state.FirstNodeStateByName(name)
+func (s *ReadableGraph) FirstNodeByName(name string) (*ReadableNode, error) {
+	st := s.state.FirstNodeByName(name)
 	if st == nil {
 		return nil, fmt.Errorf("Node state with name %s not found", name)
 	}

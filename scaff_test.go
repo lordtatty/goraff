@@ -67,11 +67,11 @@ func TestGraph_Go_NoEdges(t *testing.T) {
 	assert.NoError(err)
 
 	// Should only be one state for action1, as it should only have run once, and the key should be set to the action name
-	states := graph.NodeStateByName("action1")
+	states := graph.NodeByName("action1")
 	assert.Len(states, 1)
 	assert.Equal("action1", states[0].Reader().GetStr("action1_key"))
 	// action2 should not have run
-	assert.Len(graph.NodeStateByName("action2"), 0)
+	assert.Len(graph.NodeByName("action2"), 0)
 }
 
 func TestGraph_NodeHasError(t *testing.T) {
@@ -114,13 +114,13 @@ func TestGraph_Go_WithEdges(t *testing.T) {
 	err := g.Go(graph)
 	assert.NoError(err)
 
-	assert.Len(graph.NodeStateByName("action1"), 1)
-	assert.Equal("action1", graph.NodeStateByName("action1")[0].Reader().GetStr("action1_key"))
-	assert.Len(graph.NodeStateByName("action2"), 1)
-	assert.Equal("action1 :: action2", graph.NodeStateByName("action2")[0].Reader().GetStr("action2_key"))
-	assert.Len(graph.NodeStateByName("action3"), 1)
-	assert.Equal("action2 :: action3", graph.NodeStateByName("action3")[0].Reader().GetStr("action3_key"))
-	assert.Len(graph.NodeStateByName("action4"), 0) // Action 4 should not have run
+	assert.Len(graph.NodeByName("action1"), 1)
+	assert.Equal("action1", graph.NodeByName("action1")[0].Reader().GetStr("action1_key"))
+	assert.Len(graph.NodeByName("action2"), 1)
+	assert.Equal("action1 :: action2", graph.NodeByName("action2")[0].Reader().GetStr("action2_key"))
+	assert.Len(graph.NodeByName("action3"), 1)
+	assert.Equal("action2 :: action3", graph.NodeByName("action3")[0].Reader().GetStr("action3_key"))
+	assert.Len(graph.NodeByName("action4"), 0) // Action 4 should not have run
 }
 
 func TestGraph_ConditionalEdges(t *testing.T) {
@@ -143,9 +143,9 @@ func TestGraph_ConditionalEdges(t *testing.T) {
 	err := g.Go(graph)
 	assert.NoError(err)
 
-	assert.Equal("action1", graph.FirstNodeStateByName(n1).Reader().GetStr("action1_key"))
+	assert.Equal("action1", graph.FirstNodeByName(n1).Reader().GetStr("action1_key"))
 	assert.Nil(graph.NodeByID(n2)) // Action 2 should not have run
-	assert.Equal("action1 :: action3", graph.FirstNodeStateByName(n3).Reader().GetStr("action3_key"))
+	assert.Equal("action1 :: action3", graph.FirstNodeByName(n3).Reader().GetStr("action3_key"))
 }
 
 func TestGraph_AddEdge_Node1NotFound(t *testing.T) {
@@ -198,10 +198,10 @@ func TestGraph_FanOutNodes_Parallel(t *testing.T) {
 	elapsed := time.Since(start)
 	assert.True(elapsed < 2500*time.Millisecond, "Elapsed time should be less than 2.5 seconds (first node, parallel nodes, and a bit of leeway)")
 
-	assert.Equal("action1", graph.FirstNodeStateByName(n1).Reader().GetStr("action1_key"))
-	assert.Equal("action1 :: action2", graph.FirstNodeStateByName(n2).Reader().GetStr("action2_key"))
-	assert.Equal("action1 :: action3", graph.FirstNodeStateByName(n3).Reader().GetStr("action3_key"))
-	assert.Equal("action1 :: action4", graph.FirstNodeStateByName(n4).Reader().GetStr("action4_key"))
+	assert.Equal("action1", graph.FirstNodeByName(n1).Reader().GetStr("action1_key"))
+	assert.Equal("action1 :: action2", graph.FirstNodeByName(n2).Reader().GetStr("action2_key"))
+	assert.Equal("action1 :: action3", graph.FirstNodeByName(n3).Reader().GetStr("action3_key"))
+	assert.Equal("action1 :: action4", graph.FirstNodeByName(n4).Reader().GetStr("action4_key"))
 }
 
 type mockFollowIfWantsDone struct {
@@ -212,7 +212,7 @@ type mockFollowIfWantsDone struct {
 func (f *mockFollowIfWantsDone) Match(s *goraff.ReadableGraph) (bool, error) {
 	assert := assert.New(f.t)
 	for _, nodeID := range f.nodeIDs {
-		st, err := s.FirstNodeStateByName(nodeID)
+		st, err := s.FirstNodeByName(nodeID)
 		assert.Nil(err)
 		d := st.Done()
 		fmt.Println(d)
@@ -244,9 +244,9 @@ func TestGraph_StateIsMarkedDoneBeforeTriggers(t *testing.T) {
 	err := g.Go(graph)
 	assert.NoError(err)
 
-	assert.Equal("action1", graph.FirstNodeStateByName(n1).Reader().GetStr("action1_key"))
-	assert.Equal("action1 :: action2", graph.FirstNodeStateByName(n2).Reader().GetStr("action2_key"))
-	assert.Equal("action2 :: action3", graph.FirstNodeStateByName(n3).Reader().GetStr("action3_key"))
+	assert.Equal("action1", graph.FirstNodeByName(n1).Reader().GetStr("action1_key"))
+	assert.Equal("action1 :: action2", graph.FirstNodeByName(n2).Reader().GetStr("action2_key"))
+	assert.Equal("action2 :: action3", graph.FirstNodeByName(n3).Reader().GetStr("action3_key"))
 }
 
 func TestGraph_EntrypointNotSet(t *testing.T) {
@@ -305,8 +305,8 @@ func TestGraph_FlowMgr_ReaderPassing(t *testing.T) {
 	err := g.Go(graph)
 	assert.NoError(err)
 
-	assert.Equal("reader is nil", graph.FirstNodeStateByName(n1).Reader().GetStr("check_reader_key"))
-	assert.Equal("reader is not nil", graph.FirstNodeStateByName(n2).Reader().GetStr("check_reader_key"))
+	assert.Equal("reader is nil", graph.FirstNodeByName(n1).Reader().GetStr("check_reader_key"))
+	assert.Equal("reader is not nil", graph.FirstNodeByName(n2).Reader().GetStr("check_reader_key"))
 }
 
 func TestGraph_Go_ValidateEntrypoint(t *testing.T) {

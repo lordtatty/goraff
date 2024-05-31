@@ -15,7 +15,7 @@ func TestNodeState_SubState(t *testing.T) {
 	s := &goraff.Graph{}
 	n.SetSubGraph(s)
 
-	sn := s.NewNodeState("subnode")
+	sn := s.NewNode("subnode")
 	sn.SetStr("key1", "value1")
 
 	subGraph := n.Reader().SubGraph()
@@ -168,6 +168,6 @@ type MockNotifier struct {
 	Notified bool
 }
 
-func (m *MockNotifier) Notify(notification goraff.StateChangeNotification) {
+func (m *MockNotifier) Notify(notification goraff.GraphChangeNotification) {
 	m.Notified = true
 }

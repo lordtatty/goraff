@@ -167,7 +167,7 @@ func (g *Scaff) flowMgr() error {
 }
 
 func (g *Scaff) runBlock(n *Block, triggeringNS *ReadableNode) ([]*Block, *Node, error) {
-	s := g.state.NewNodeState(n.Name)
+	s := g.state.NewNode(n.Name)
 	r := NewReadableGraph(g.state)
 	err := n.Action.Do(s, r, triggeringNS)
 	if err != nil {

@@ -13,7 +13,7 @@ func TestEdgeCondition_KeyMatches(t *testing.T) {
 	edge := &goraff.Edge{}
 	edge.Condition = sut
 	graph := &goraff.Graph{}
-	graph.NewNodeState("node1").SetStr("key1", "value1")
+	graph.NewNode("node1").SetStr("key1", "value1")
 	readable := goraff.NewReadableGraph(graph)
 	assert.True(edge.TriggersMet(readable))
 }
@@ -24,7 +24,7 @@ func TestEdgeCondition_KeyMatches_Fails(t *testing.T) {
 	edge := &goraff.Edge{}
 	edge.Condition = sut
 	graph := &goraff.Graph{}
-	graph.NewNodeState("node1").SetStr("key1", "value2")
+	graph.NewNode("node1").SetStr("key1", "value2")
 	readable := goraff.NewReadableGraph(graph)
 	assert.False(edge.TriggersMet(readable))
 }
@@ -35,8 +35,8 @@ func TestEdgeCondition_NodesCompleted(t *testing.T) {
 	edge := &goraff.Edge{}
 	edge.Condition = sut
 	graph := &goraff.Graph{}
-	graph.NewNodeState("node1").MarkDone()
-	graph.NewNodeState("node2").MarkDone()
+	graph.NewNode("node1").MarkDone()
+	graph.NewNode("node2").MarkDone()
 	readable := goraff.NewReadableGraph(graph)
 	assert.True(edge.TriggersMet(readable))
 }
@@ -47,8 +47,8 @@ func TestEdgeCondition_NodesCompleted_Fails(t *testing.T) {
 	edge := &goraff.Edge{}
 	edge.Condition = sut
 	graph := &goraff.Graph{}
-	graph.NewNodeState("node1").MarkDone()
-	graph.NewNodeState("node2") // not marked done
+	graph.NewNode("node1").MarkDone()
+	graph.NewNode("node2") // not marked done
 	readable := goraff.NewReadableGraph(graph)
 	assert.False(edge.TriggersMet(readable))
 }

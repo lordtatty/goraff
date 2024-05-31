@@ -131,12 +131,12 @@ func (o *Outputter) node(ns *goraff.ReadableNode) *NodeOutput {
 }
 
 type ChangeListener interface {
-	Listen(func(goraff.StateChangeNotification))
+	Listen(func(goraff.GraphChangeNotification))
 }
 
 // TODO - test this
 func BroadcastChanges(l ChangeListener, r *goraff.ReadableGraph, ws *websocket.WebSocketServer) {
-	l.Listen(func(c goraff.StateChangeNotification) {
+	l.Listen(func(c goraff.GraphChangeNotification) {
 		out := Outputter{}
 		o := out.Output(r)
 		snd, err := json.Marshal(o)
@@ -150,7 +150,7 @@ func BroadcastChanges(l ChangeListener, r *goraff.ReadableGraph, ws *websocket.W
 
 // TODO - test this
 func PrintUpdatesToConsole(l ChangeListener, r *goraff.ReadableGraph) {
-	l.Listen(func(c goraff.StateChangeNotification) {
+	l.Listen(func(c goraff.GraphChangeNotification) {
 		out := Outputter{}
 		o := out.Output(r)
 		fmt.Println("##########################################")

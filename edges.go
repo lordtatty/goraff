@@ -29,7 +29,7 @@ type followIfKeyMatchesName struct {
 }
 
 func (e *followIfKeyMatchesName) Match(s *ReadableGraph) (bool, error) {
-	n, err := s.FirstNodeStateByName(e.Name)
+	n, err := s.FirstNodeByName(e.Name)
 	if err != nil {
 		return false, fmt.Errorf("error getting node state: %w", err)
 	}
@@ -46,7 +46,7 @@ type followIfNodesCompleted struct {
 
 func (e *followIfNodesCompleted) Match(s *ReadableGraph) (bool, error) {
 	for _, nodeID := range e.NodeIDs {
-		st, err := s.FirstNodeStateByName(nodeID)
+		st, err := s.FirstNodeByName(nodeID)
 		if err != nil {
 			return false, fmt.Errorf("error getting node state: %w", err)
 		}

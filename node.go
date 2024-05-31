@@ -36,7 +36,7 @@ func (n *Node) Set(key string, value []byte) {
 	n.state[key] = value
 	n.mut.Unlock()
 	if n.notifier != nil {
-		n.notifier.Notify(StateChangeNotification{NodeID: n.name})
+		n.notifier.Notify(GraphChangeNotification{NodeID: n.name})
 	}
 }
 

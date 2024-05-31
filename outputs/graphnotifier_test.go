@@ -16,8 +16,8 @@ func TestGraphNotifier_ListenAndNotify(t *testing.T) {
 	notifier := &outputs.GraphNotifier{}
 
 	// Define a callback function and a variable to capture the notification
-	var receivedNotification goraff.StateChangeNotification
-	callback := func(notification goraff.StateChangeNotification) {
+	var receivedNotification goraff.GraphChangeNotification
+	callback := func(notification goraff.GraphChangeNotification) {
 		defer wg.Done()
 		receivedNotification = notification
 	}
@@ -27,7 +27,7 @@ func TestGraphNotifier_ListenAndNotify(t *testing.T) {
 	notifier.Listen(callback)
 
 	// Create a notification
-	expectedNotification := goraff.StateChangeNotification{NodeID: "node123"}
+	expectedNotification := goraff.GraphChangeNotification{NodeID: "node123"}
 
 	// Notify all registered callbacks
 	notifier.Notify(expectedNotification)
@@ -46,12 +46,12 @@ func TestGraphNotifier_MultipleCallbacks(t *testing.T) {
 	notifier := &outputs.GraphNotifier{}
 
 	// Define callback functions and variables to capture notifications
-	receivedNotifications := make([]goraff.StateChangeNotification, 2)
-	callback1 := func(notification goraff.StateChangeNotification) {
+	receivedNotifications := make([]goraff.GraphChangeNotification, 2)
+	callback1 := func(notification goraff.GraphChangeNotification) {
 		defer wg.Done()
 		receivedNotifications[0] = notification
 	}
-	callback2 := func(notification goraff.StateChangeNotification) {
+	callback2 := func(notification goraff.GraphChangeNotification) {
 		defer wg.Done()
 		receivedNotifications[1] = notification
 	}
@@ -62,7 +62,7 @@ func TestGraphNotifier_MultipleCallbacks(t *testing.T) {
 	notifier.Listen(callback2)
 
 	// Create a notification
-	expectedNotification := goraff.StateChangeNotification{NodeID: "node123"}
+	expectedNotification := goraff.GraphChangeNotification{NodeID: "node123"}
 
 	// Notify all registered callbacks
 	notifier.Notify(expectedNotification)
@@ -80,7 +80,7 @@ func TestGraphNotifier_NoCallbacks(t *testing.T) {
 	notifier := &outputs.GraphNotifier{}
 
 	// Create a notification
-	notification := goraff.StateChangeNotification{NodeID: "node123"}
+	notification := goraff.GraphChangeNotification{NodeID: "node123"}
 
 	// Notify without any registered callbacks (should not panic)
 	assert.NotPanics(t, func() {
@@ -96,7 +96,7 @@ func TestGraphNotifier_NilCallback(t *testing.T) {
 	notifier.Listen(nil)
 
 	// Create a notification
-	notification := goraff.StateChangeNotification{NodeID: "node123"}
+	notification := goraff.GraphChangeNotification{NodeID: "node123"}
 
 	// Notify all registered callbacks (should not panic even if nil has been passed as a callback)
 	assert.NotPanics(t, func() {
@@ -111,9 +111,9 @@ func TestGraphNotifier_Concurrency(t *testing.T) {
 	notifier := &outputs.GraphNotifier{}
 
 	const numCallbacks = 100
-	receivedNotifications := make([]goraff.StateChangeNotification, numCallbacks)
-	callback := func(i int) func(goraff.StateChangeNotification) {
-		return func(notification goraff.StateChangeNotification) {
+	receivedNotifications := make([]goraff.GraphChangeNotification, numCallbacks)
+	callback := func(i int) func(goraff.GraphChangeNotification) {
+		return func(notification goraff.GraphChangeNotification) {
 			defer wg.Done()
 			receivedNotifications[i] = notification
 		}
@@ -126,7 +126,7 @@ func TestGraphNotifier_Concurrency(t *testing.T) {
 	}
 
 	// Create a notification
-	expectedNotification := goraff.StateChangeNotification{NodeID: "node123"}
+	expectedNotification := goraff.GraphChangeNotification{NodeID: "node123"}
 
 	// Notify all registered callbacks
 	notifier.Notify(expectedNotification)
@@ -147,8 +147,8 @@ func TestGraphNotifier_EmptyNotification(t *testing.T) {
 	notifier := &outputs.GraphNotifier{}
 
 	// Define a callback function and a variable to capture the notification
-	var receivedNotification goraff.StateChangeNotification
-	callback := func(notification goraff.StateChangeNotification) {
+	var receivedNotification goraff.GraphChangeNotification
+	callback := func(notification goraff.GraphChangeNotification) {
 		defer wg.Done()
 		receivedNotification = notification
 	}
@@ -158,7 +158,7 @@ func TestGraphNotifier_EmptyNotification(t *testing.T) {
 	notifier.Listen(callback)
 
 	// Create an empty notification
-	expectedNotification := goraff.StateChangeNotification{}
+	expectedNotification := goraff.GraphChangeNotification{}
 
 	// Notify all registered callbacks
 	notifier.Notify(expectedNotification)
@@ -178,7 +178,7 @@ func TestGraphNotifier_SameCallbackMultipleTimes(t *testing.T) {
 
 	// Define a callback function and a counter to track how many times it's called
 	callCount := 0
-	callback := func(notification goraff.StateChangeNotification) {
+	callback := func(notification goraff.GraphChangeNotification) {
 		defer wg.Done()
 		callCount++
 	}
@@ -191,7 +191,7 @@ func TestGraphNotifier_SameCallbackMultipleTimes(t *testing.T) {
 	}
 
 	// Create a notification
-	notification := goraff.StateChangeNotification{NodeID: "node123"}
+	notification := goraff.GraphChangeNotification{NodeID: "node123"}
 
 	// Notify all registered callbacks
 	notifier.Notify(notification)
@@ -212,13 +212,13 @@ func TestGraphNotifier_CallbackOrder(t *testing.T) {
 	// Define callback functions and an array to capture the order of calls
 	callOrder := []int{}
 	var mu sync.Mutex
-	callback1 := func(notification goraff.StateChangeNotification) {
+	callback1 := func(notification goraff.GraphChangeNotification) {
 		defer wg.Done()
 		mu.Lock()
 		callOrder = append(callOrder, 1)
 		mu.Unlock()
 	}
-	callback2 := func(notification goraff.StateChangeNotification) {
+	callback2 := func(notification goraff.GraphChangeNotification) {
 		defer wg.Done()
 		mu.Lock()
 		callOrder = append(callOrder, 2)
@@ -231,7 +231,7 @@ func TestGraphNotifier_CallbackOrder(t *testing.T) {
 	notifier.Listen(callback2)
 
 	// Create a notification
-	notification := goraff.StateChangeNotification{NodeID: "node123"}
+	notification := goraff.GraphChangeNotification{NodeID: "node123"}
 
 	// Notify all registered callbacks
 	notifier.Notify(notification)

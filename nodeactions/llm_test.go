@@ -51,14 +51,14 @@ func TestLLM_Do(t *testing.T) {
 	ntfy := &outputs.GraphNotifier{}
 	s := &goraff.Graph{Notifier: ntfy}
 	r := goraff.NewReadableGraph(s)
-	ntfy.Listen(func(ntfy goraff.StateChangeNotification) {
+	ntfy.Listen(func(ntfy goraff.GraphChangeNotification) {
 		msgIdx++
 		want := strings.Join(expectedMessages[:msgIdx], "")
-		n, err := r.FirstNodeStateByName("node1")
+		n, err := r.FirstNodeByName("node1")
 		assert.NoError(err)
 		assert.Equal(want, n.GetStr("result"))
 	})
-	n := s.NewNodeState("node1")
+	n := s.NewNode("node1")
 
 	err := sut.Do(n, r, nil)
 	assert.NoError(err)

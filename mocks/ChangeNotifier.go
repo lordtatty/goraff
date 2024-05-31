@@ -21,7 +21,7 @@ func (_m *ChangeNotifier) EXPECT() *ChangeNotifier_Expecter {
 }
 
 // Notify provides a mock function with given fields: notification
-func (_m *ChangeNotifier) Notify(notification goraff.StateChangeNotification) {
+func (_m *ChangeNotifier) Notify(notification goraff.GraphChangeNotification) {
 	_m.Called(notification)
 }
 
@@ -31,14 +31,14 @@ type ChangeNotifier_Notify_Call struct {
 }
 
 // Notify is a helper method to define mock.On call
-//   - notification goraff.StateChangeNotification
+//   - notification goraff.GraphChangeNotification
 func (_e *ChangeNotifier_Expecter) Notify(notification interface{}) *ChangeNotifier_Notify_Call {
 	return &ChangeNotifier_Notify_Call{Call: _e.mock.On("Notify", notification)}
 }
 
-func (_c *ChangeNotifier_Notify_Call) Run(run func(notification goraff.StateChangeNotification)) *ChangeNotifier_Notify_Call {
+func (_c *ChangeNotifier_Notify_Call) Run(run func(notification goraff.GraphChangeNotification)) *ChangeNotifier_Notify_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(goraff.StateChangeNotification))
+		run(args[0].(goraff.GraphChangeNotification))
 	})
 	return _c
 }
@@ -48,7 +48,7 @@ func (_c *ChangeNotifier_Notify_Call) Return() *ChangeNotifier_Notify_Call {
 	return _c
 }
 
-func (_c *ChangeNotifier_Notify_Call) RunAndReturn(run func(goraff.StateChangeNotification)) *ChangeNotifier_Notify_Call {
+func (_c *ChangeNotifier_Notify_Call) RunAndReturn(run func(goraff.GraphChangeNotification)) *ChangeNotifier_Notify_Call {
 	_c.Call.Return(run)
 	return _c
 }
