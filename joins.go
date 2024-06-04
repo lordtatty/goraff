@@ -2,21 +2,21 @@ package goraff
 
 import "fmt"
 
-// Condition is a condition that must be met for an edge to be taken
+// Condition is a condition that must be met for a join to be taken
 type FollowIf interface {
 	Match(s *ReadableGraph) (bool, error)
 }
 
-// Edge represents an edge in the graph
-type Edge struct {
+// Join connects two blocks in a scaff
+type Join struct {
 	From      *Block
 	To        *Block
 	Condition FollowIf
 }
 
-func (e *Edge) TriggersMet(s *ReadableGraph) (bool, error) {
+func (e *Join) TriggersMet(s *ReadableGraph) (bool, error) {
 	if e.Condition == nil {
-		// without a conditon, we always follow the edge
+		// without a conditon, we always trigger the join
 		return true, nil
 	}
 	return e.Condition.Match(s)

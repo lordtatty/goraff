@@ -21,7 +21,7 @@ type Scaff struct {
 	blocks     []*Block
 	entrypoint *Block
 	state      *Graph
-	edges      map[string][]*Edge
+	joins      map[string][]*Join
 }
 
 func NewScaff() *Scaff {
@@ -56,7 +56,7 @@ func (e ErrBlockNotFound) Error() string {
 	return "block not found: " + e.ID
 }
 
-func (g *Scaff) AddEdge(fromID, toID string, condition FollowIf) error {
+func (g *Scaff) AddJoin(fromID, toID string, condition FollowIf) error {
 	from := g.blockByID(fromID)
 	if from == nil {
 		return ErrBlockNotFound{
@@ -69,14 +69,14 @@ func (g *Scaff) AddEdge(fromID, toID string, condition FollowIf) error {
 			ID: toID,
 		}
 	}
-	if g.edges == nil {
-		g.edges = make(map[string][]*Edge)
+	if g.joins == nil {
+		g.joins = make(map[string][]*Join)
 	}
-	e := &Edge{From: from, To: to, Condition: condition}
-	if _, ok := g.edges[from.Name]; !ok {
-		g.edges[from.Name] = []*Edge{}
+	e := &Join{From: from, To: to, Condition: condition}
+	if _, ok := g.joins[from.Name]; !ok {
+		g.joins[from.Name] = []*Join{}
 	}
-	g.edges[from.Name] = append(g.edges[from.Name], e)
+	g.joins[from.Name] = append(g.joins[from.Name], e)
 	return nil
 }
 
@@ -175,11 +175,11 @@ func (g *Scaff) runBlock(n *Block, triggeringNS *ReadableNode) ([]*Block, *Node,
 	}
 	nextBlocks := []*Block{}
 	s.MarkDone()
-	if edges, ok := g.edges[n.Name]; ok {
-		for _, e := range edges {
+	if joins, ok := g.joins[n.Name]; ok {
+		for _, e := range joins {
 			t, err := e.TriggersMet(r)
 			if err != nil {
-				return nil, nil, fmt.Errorf("error checking edge condition: %w", err)
+				return nil, nil, fmt.Errorf("error checking join condition: %w", err)
 			}
 			if t {
 				nextBlocks = append(nextBlocks, e.To)

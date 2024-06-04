@@ -22,7 +22,7 @@ func TestGraphNode_Do(t *testing.T) {
 	scaff := goraff.NewScaff()
 	n1 := scaff.AddBlock("sut_block", sut)
 	scaff.SetEntrypoint(n1)
-	scaff.AddEdge(n1, input1, nil)
+	scaff.AddJoin(n1, input1, nil)
 
 	graph := &goraff.Graph{}
 	err := scaff.Go(graph)
