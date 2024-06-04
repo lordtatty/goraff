@@ -143,7 +143,7 @@ func (g *Scaff) flowMgr() error {
 				}
 				nextBlocks, compeltedState, err := g.runBlock(n.Block, tr)
 				if err != nil {
-					fmt.Println("error running block, letting all active blocks drain: ", n.Block.Name)
+					fmt.Printf("error running block %s, letting all active blocks drain: %s \n", n.Block.Name, err.Error())
 					mut.Lock()
 					foundErr = fmt.Errorf("error running block: %w", err)
 					mut.Unlock()
