@@ -7,7 +7,7 @@ import (
 	"github.com/lordtatty/goraff"
 	"github.com/lordtatty/goraff/mocks"
 	"github.com/lordtatty/goraff/nodeactions"
-	"github.com/lordtatty/goraff/outputs"
+	"github.com/lordtatty/goraff/notifiers"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
@@ -48,7 +48,7 @@ func TestLLM_Do(t *testing.T) {
 		Client:    mClient,
 	}
 	msgIdx := 0
-	ntfy := &outputs.GraphNotifier{}
+	ntfy := &notifiers.GraphNotifier{}
 	s := &goraff.Graph{Notifier: ntfy}
 	r := goraff.NewReadableGraph(s)
 	ntfy.Listen(func(ntfy goraff.GraphChangeNotification) {
