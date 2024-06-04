@@ -53,7 +53,7 @@ func (a *actionMock) Do(s *goraff.Node, r *goraff.ReadableGraph, triggeringNS *g
 	return nil
 }
 
-func TestGraph_Go_NoEdges(t *testing.T) {
+func TestScaff_Go_NoJoins(t *testing.T) {
 	assert := assert.New(t)
 	g := &goraff.Scaff{}
 	a1 := &actionMock{name: "action1"}
@@ -74,7 +74,7 @@ func TestGraph_Go_NoEdges(t *testing.T) {
 	assert.Len(graph.NodeByName("action2"), 0)
 }
 
-func TestGraph_NodeHasError(t *testing.T) {
+func TestScaff_NodeHasError(t *testing.T) {
 	assert := assert.New(t)
 	g := &goraff.Scaff{}
 	a1 := &actionMock{name: "action1"}
@@ -92,7 +92,7 @@ func TestGraph_NodeHasError(t *testing.T) {
 	assert.Equal("error running block: error", err.Error())
 }
 
-func TestGraph_Go_WithEdges(t *testing.T) {
+func TestScaff_Go_WithJoins(t *testing.T) {
 	assert := assert.New(t)
 	g := &goraff.Scaff{}
 
@@ -123,7 +123,7 @@ func TestGraph_Go_WithEdges(t *testing.T) {
 	assert.Len(graph.NodeByName("action4"), 0) // Action 4 should not have run
 }
 
-func TestGraph_ConditionalEdges(t *testing.T) {
+func TestScaff_ConditionalJoins(t *testing.T) {
 	assert := assert.New(t)
 	g := &goraff.Scaff{}
 
@@ -148,7 +148,7 @@ func TestGraph_ConditionalEdges(t *testing.T) {
 	assert.Equal("action1 :: action3", graph.FirstNodeByName(n3).Reader().GetStr("action3_key"))
 }
 
-func TestGraph_AddEdge_Node1NotFound(t *testing.T) {
+func TestScaff_AddJoin_Node1NotFound(t *testing.T) {
 	assert := assert.New(t)
 	g := &goraff.Scaff{}
 	err := g.AddJoin("node1", "node2", nil)
@@ -156,7 +156,7 @@ func TestGraph_AddEdge_Node1NotFound(t *testing.T) {
 	assert.Equal("block not found: node1", err.Error())
 }
 
-func TestGraph_AddEdge_Node2NotFound(t *testing.T) {
+func TestScaff_AddJoin_Node2NotFound(t *testing.T) {
 	assert := assert.New(t)
 	g := &goraff.Scaff{}
 	a1 := &actionMock{name: "action1"}
@@ -166,7 +166,7 @@ func TestGraph_AddEdge_Node2NotFound(t *testing.T) {
 	assert.Equal("block not found: node2", err.Error())
 }
 
-func TestGraph_FanOutNodes_Parallel(t *testing.T) {
+func TestScaff_FanOutNodes_Parallel(t *testing.T) {
 	// In this test we are checking tha we can fan out from a node
 	// and, importantly, that the actions run in parallel
 	// We will check parallelisation by delaying each action by a second.
@@ -222,7 +222,7 @@ func (f *mockFollowIfWantsDone) Match(s *goraff.ReadableGraph) (bool, error) {
 	return true, nil
 }
 
-func TestGraph_StateIsMarkedDoneBeforeTriggers(t *testing.T) {
+func TestScaff_StateIsMarkedDoneBeforeTriggers(t *testing.T) {
 	// The state should be marked done before the triggers are checked
 	// Because some triggers may rely on the state being done
 	assert := assert.New(t)
@@ -249,7 +249,7 @@ func TestGraph_StateIsMarkedDoneBeforeTriggers(t *testing.T) {
 	assert.Equal("action2 :: action3", graph.FirstNodeByName(n3).Reader().GetStr("action3_key"))
 }
 
-func TestGraph_EntrypointNotSet(t *testing.T) {
+func TestScaff_EntrypointNotSet(t *testing.T) {
 	assert := assert.New(t)
 	g := &goraff.Scaff{}
 
@@ -280,7 +280,7 @@ func (a *actionMockCheckReader) Do(s *goraff.Node, r *goraff.ReadableGraph, trig
 	return nil
 }
 
-func TestGraph_FlowMgr_ReaderPassing(t *testing.T) {
+func TestScaff_FlowMgr_ReaderPassing(t *testing.T) {
 	assert := assert.New(t)
 	g := &goraff.Scaff{}
 
@@ -309,7 +309,7 @@ func TestGraph_FlowMgr_ReaderPassing(t *testing.T) {
 	assert.Equal("reader is not nil", graph.FirstNodeByName(n2).Reader().GetStr("check_reader_key"))
 }
 
-func TestGraph_Go_ValidateEntrypoint(t *testing.T) {
+func TestScaff_Go_ValidateEntrypoint(t *testing.T) {
 	assert := assert.New(t)
 	g := &goraff.Scaff{}
 
@@ -325,7 +325,7 @@ func TestGraph_Go_ValidateEntrypoint(t *testing.T) {
 	assert.Equal("error validating graph: entrypoint not set", err.Error())
 }
 
-func TestGraph_Go_ValidateUniqueBlockNames(t *testing.T) {
+func TestScaff_Go_ValidateUniqueBlockNames(t *testing.T) {
 	assert := assert.New(t)
 	g := &goraff.Scaff{}
 
