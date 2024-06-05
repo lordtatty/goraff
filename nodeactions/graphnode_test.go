@@ -12,7 +12,7 @@ func TestGraphNode_Do(t *testing.T) {
 	assert := assert.New(t)
 
 	subScaff := &goraff.Scaff{}
-	input1 := subScaff.AddBlock("input1", &nodeactions.Input{Value: "value1"})
+	input1 := subScaff.Blocks().Add("input1", &nodeactions.Input{Value: "value1"})
 	subScaff.SetEntrypoint(input1)
 
 	sut := &nodeactions.ScaffNode{
@@ -20,7 +20,7 @@ func TestGraphNode_Do(t *testing.T) {
 	}
 
 	scaff := goraff.NewScaff()
-	n1 := scaff.AddBlock("sut_block", sut)
+	n1 := scaff.Blocks().Add("sut_block", sut)
 	scaff.SetEntrypoint(n1)
 	scaff.Joins().Add(n1, input1, nil)
 

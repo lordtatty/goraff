@@ -59,8 +59,8 @@ func TestScaff_Go_NoJoins(t *testing.T) {
 	a1 := &actionMock{name: "action1"}
 	a2 := &actionMock{name: "action2", lastName: "action1", expectNoRun: true, t: t}
 
-	n1 := g.AddBlock("action1", a1)
-	_ = g.AddBlock("action2", a2)
+	n1 := g.Blocks().Add("action1", a1)
+	_ = g.Blocks().Add("action2", a2)
 	g.SetEntrypoint(n1)
 	graph := &goraff.Graph{}
 	err := g.Go(graph)
@@ -80,8 +80,8 @@ func TestScaff_NodeHasError(t *testing.T) {
 	a1 := &actionMock{name: "action1"}
 	a2 := &actionMock{name: "action2", lastName: "action1", err: fmt.Errorf("error"), t: t}
 
-	n1 := g.AddBlock("action1", a1)
-	n2 := g.AddBlock("action2", a2)
+	n1 := g.Blocks().Add("action1", a1)
+	n2 := g.Blocks().Add("action2", a2)
 
 	g.Joins().Add(n1, n2, nil)
 
@@ -97,13 +97,13 @@ func TestScaff_Go_WithJoins(t *testing.T) {
 	g := &goraff.Scaff{}
 
 	a1 := &actionMock{name: "action1"}
-	n1 := g.AddBlock("action1", a1)
+	n1 := g.Blocks().Add("action1", a1)
 	a2 := &actionMock{name: "action2", lastName: "action1"}
-	n2 := g.AddBlock("action2", a2)
+	n2 := g.Blocks().Add("action2", a2)
 	a3 := &actionMock{name: "action3", lastName: "action2"}
-	n3 := g.AddBlock("action3", a3)
+	n3 := g.Blocks().Add("action3", a3)
 	a4 := &actionMock{name: "action4", expectNoRun: true, t: t}
-	g.AddBlock("action4", a4) // thi should not run
+	g.Blocks().Add("action4", a4) // thi should not run
 
 	g.SetEntrypoint(n1)
 	// with no condition we always follow the join
@@ -128,11 +128,11 @@ func TestScaff_ConditionalJoins(t *testing.T) {
 	g := &goraff.Scaff{}
 
 	a1 := &actionMock{name: "action1"}
-	n1 := g.AddBlock("action1", a1)
+	n1 := g.Blocks().Add("action1", a1)
 	a2 := &actionMock{name: "action2", lastName: "action1", expectNoRun: true, t: t}
-	n2 := g.AddBlock("action2", a2)
+	n2 := g.Blocks().Add("action2", a2)
 	a3 := &actionMock{name: "action3", lastName: "action1"}
-	n3 := g.AddBlock("action3", a3)
+	n3 := g.Blocks().Add("action3", a3)
 
 	g.SetEntrypoint(n1)
 	// Both n2 and n3 should follow n1, but only n3 should match the condition
@@ -148,24 +148,6 @@ func TestScaff_ConditionalJoins(t *testing.T) {
 	assert.Equal("action1 :: action3", graph.FirstNodeByName(n3).Reader().GetStr("action3_key"))
 }
 
-func TestScaff_AddJoin_Node1NotFound(t *testing.T) {
-	assert := assert.New(t)
-	g := &goraff.Scaff{}
-	err := g.Joins().Add("node1", "node2", nil)
-	assert.Error(err)
-	assert.Equal("block not found: node1", err.Error())
-}
-
-func TestScaff_AddJoin_Node2NotFound(t *testing.T) {
-	assert := assert.New(t)
-	g := &goraff.Scaff{}
-	a1 := &actionMock{name: "action1"}
-	n1 := g.AddBlock("action1", a1)
-	err := g.Joins().Add(n1, "node2", nil)
-	assert.Error(err)
-	assert.Equal("block not found: node2", err.Error())
-}
-
 func TestScaff_FanOutNodes_Parallel(t *testing.T) {
 	// In this test we are checking tha we can fan out from a node
 	// and, importantly, that the actions run in parallel
@@ -176,13 +158,13 @@ func TestScaff_FanOutNodes_Parallel(t *testing.T) {
 	g := &goraff.Scaff{}
 
 	a1 := &actionMock{name: "action1", delay: 1 * time.Second}
-	n1 := g.AddBlock("action1", a1)
+	n1 := g.Blocks().Add("action1", a1)
 	a2 := &actionMock{name: "action2", lastName: "action1", delay: 1 * time.Second}
-	n2 := g.AddBlock("action2", a2)
+	n2 := g.Blocks().Add("action2", a2)
 	a3 := &actionMock{name: "action3", lastName: "action1", delay: 1 * time.Second}
-	n3 := g.AddBlock("action3", a3)
+	n3 := g.Blocks().Add("action3", a3)
 	a4 := &actionMock{name: "action4", lastName: "action1", delay: 1 * time.Second}
-	n4 := g.AddBlock("action4", a4)
+	n4 := g.Blocks().Add("action4", a4)
 
 	g.SetEntrypoint(n1)
 	g.Joins().Add(n1, n2, nil)
@@ -229,11 +211,11 @@ func TestScaff_StateIsMarkedDoneBeforeTriggers(t *testing.T) {
 	g := &goraff.Scaff{}
 
 	a1 := &actionMock{name: "action1"}
-	n1 := g.AddBlock("action1", a1)
+	n1 := g.Blocks().Add("action1", a1)
 	a2 := &actionMock{name: "action2", lastName: "action1"}
-	n2 := g.AddBlock("action2", a2)
+	n2 := g.Blocks().Add("action2", a2)
 	a3 := &actionMock{name: "action3", lastName: "action2"}
-	n3 := g.AddBlock("action3", a3)
+	n3 := g.Blocks().Add("action3", a3)
 
 	g.SetEntrypoint(n1)
 	g.Joins().Add(n1, n2, nil)
@@ -289,14 +271,14 @@ func TestScaff_FlowMgr_ReaderPassing(t *testing.T) {
 		expectNilReader: true,
 		t:               t,
 	}
-	n1 := g.AddBlock("action1", checkReaderAction1)
+	n1 := g.Blocks().Add("action1", checkReaderAction1)
 
 	// Define another action mock that will be triggered by the first and expects a non-nil reader
 	checkReaderAction2 := &actionMockCheckReader{
 		expectNilReader: false,
 		t:               t,
 	}
-	n2 := g.AddBlock("action2", checkReaderAction2)
+	n2 := g.Blocks().Add("action2", checkReaderAction2)
 
 	g.SetEntrypoint(n1)
 	g.Joins().Add(n1, n2, nil)
@@ -314,9 +296,9 @@ func TestScaff_Go_ValidateEntrypoint(t *testing.T) {
 	g := &goraff.Scaff{}
 
 	a1 := &actionMock{name: "action1"}
-	g.AddBlock("action1", a1)
+	g.Blocks().Add("action1", a1)
 	a2 := &actionMock{name: "action2", lastName: "action1"}
-	g.AddBlock("action2", a2)
+	g.Blocks().Add("action2", a2)
 
 	// No entrypoint set
 	graph := &goraff.Graph{}
@@ -330,13 +312,13 @@ func TestScaff_Go_ValidateUniqueBlockNames(t *testing.T) {
 	g := &goraff.Scaff{}
 
 	a1 := &actionMock{name: "action1"}
-	n1 := g.AddBlock("action1", a1)
+	n1 := g.Blocks().Add("action1", a1)
 	a2 := &actionMock{name: "action1"}
-	g.AddBlock("action1", a2)
+	g.Blocks().Add("action1", a2)
 
 	g.SetEntrypoint(n1)
 	graph := &goraff.Graph{}
 	err := g.Go(graph)
 	assert.Error(err)
-	assert.Equal("error validating graph: block name not unique: action1", err.Error())
+	assert.Equal("error validating graph: error validating blocks: block name not unique: action1", err.Error())
 }

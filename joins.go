@@ -9,25 +9,46 @@ type FollowIf interface {
 
 // Manage joins
 type Joins struct {
-	joins map[string][]*Join
-	Scaff *Scaff
+	joins  map[string][]*Join
+	Blocks *Blocks
+	errs   []error
+}
+
+func (j *Joins) trackErr(err error) error {
+	j.errs = append(j.errs, err)
+	return err
+}
+
+func (j *Joins) Validate() error {
+	if j.errs != nil {
+		return fmt.Errorf("joins have errors: %v", j.errs)
+	}
+	return nil
+}
+
+type ErrBlockNotFound struct {
+	ID string
+}
+
+func (e ErrBlockNotFound) Error() string {
+	return "block not found: " + e.ID
 }
 
 func (j *Joins) Add(fromName, toName string, condition FollowIf) error {
-	if j.Scaff == nil {
-		return fmt.Errorf("joins must be associated with a scaff")
+	if j.Blocks == nil {
+		return fmt.Errorf("joins must be associated with a Blocks struct")
 	}
-	from := j.Scaff.BlockByName(fromName)
+	from := j.Blocks.Get(fromName)
 	if from == nil {
-		return ErrBlockNotFound{
+		return j.trackErr(ErrBlockNotFound{
 			ID: fromName,
-		}
+		})
 	}
-	to := j.Scaff.BlockByName(toName)
+	to := j.Blocks.Get(toName)
 	if to == nil {
-		return ErrBlockNotFound{
+		return j.trackErr(ErrBlockNotFound{
 			ID: toName,
-		}
+		})
 	}
 	if j.joins == nil {
 		j.joins = make(map[string][]*Join)

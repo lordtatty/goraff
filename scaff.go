@@ -5,55 +5,38 @@ import (
 	"sync"
 )
 
-type BlockAction interface {
-	Do(s *Node, r *ReadableGraph, triggeringNS *ReadableNode) error
-}
-
-// Block represents a node in the graph
-type Block struct {
-	Action BlockAction
-	Name   string
-}
-
 // Scaff represents blueprint of blocks
 // When it runs, it will create a graph of data
 type Scaff struct {
-	blocks     []*Block
 	entrypoint *Block
 	state      *Graph
 	joins      *Joins
+	blocks     *Blocks
 }
 
 func NewScaff() *Scaff {
 	return &Scaff{}
 }
 
-func (g *Scaff) AddBlock(name string, a BlockAction) string {
-	n := &Block{Action: a, Name: name}
-	g.blocks = append(g.blocks, n)
-	return n.Name
+func (g *Scaff) Blocks() *Blocks {
+	if g.blocks == nil {
+		g.blocks = &Blocks{}
+	}
+	return g.blocks
 }
 
-func (g *Scaff) SetEntrypoint(id string) {
-	n := g.BlockByName(id)
-	g.entrypoint = n
-}
-
-func (g *Scaff) BlockByName(id string) *Block {
-	for _, n := range g.blocks {
-		if n.Name == id {
-			return n
+func (g *Scaff) Joins() *Joins {
+	if g.joins == nil {
+		g.joins = &Joins{
+			Blocks: g.Blocks(),
 		}
 	}
-	return nil
+	return g.joins
 }
 
-type ErrBlockNotFound struct {
-	ID string
-}
-
-func (e ErrBlockNotFound) Error() string {
-	return "block not found: " + e.ID
+func (g *Scaff) SetEntrypoint(name string) {
+	n := g.blocks.Get(name)
+	g.entrypoint = n
 }
 
 func (g *Scaff) Go(graph *Graph) error {
@@ -72,13 +55,15 @@ func (g *Scaff) validate() error {
 	if g.entrypoint == nil {
 		return fmt.Errorf("entrypoint not set")
 	}
-	// check block names are unique
-	names := map[string]struct{}{}
-	for _, b := range g.blocks {
-		if _, ok := names[b.Name]; ok {
-			return fmt.Errorf("block name not unique: %s", b.Name)
-		}
-		names[b.Name] = struct{}{}
+	// check blocks
+	err := g.Blocks().Validate()
+	if err != nil {
+		return fmt.Errorf("error validating blocks: %w", err)
+	}
+	// check joins
+	err = g.Joins().Validate()
+	if err != nil {
+		return fmt.Errorf("error validating joins: %w", err)
 	}
 	return nil
 }
@@ -163,13 +148,4 @@ func (g *Scaff) runBlock(n *Block, triggeringNS *ReadableNode) ([]*Block, *Node,
 		}
 	}
 	return nextBlocks, s, nil
-}
-
-func (g *Scaff) Joins() *Joins {
-	if g.joins == nil {
-		g.joins = &Joins{
-			Scaff: g,
-		}
-	}
-	return g.joins
 }
