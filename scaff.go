@@ -21,7 +21,7 @@ type Scaff struct {
 	blocks     []*Block
 	entrypoint *Block
 	state      *Graph
-	joins      map[string][]*Join
+	joins      *Joins
 }
 
 func NewScaff() *Scaff {
@@ -35,11 +35,11 @@ func (g *Scaff) AddBlock(name string, a BlockAction) string {
 }
 
 func (g *Scaff) SetEntrypoint(id string) {
-	n := g.blockByID(id)
+	n := g.BlockByName(id)
 	g.entrypoint = n
 }
 
-func (g *Scaff) blockByID(id string) *Block {
+func (g *Scaff) BlockByName(id string) *Block {
 	for _, n := range g.blocks {
 		if n.Name == id {
 			return n
@@ -54,34 +54,6 @@ type ErrBlockNotFound struct {
 
 func (e ErrBlockNotFound) Error() string {
 	return "block not found: " + e.ID
-}
-
-func AddFanOut(fromID string, toIDs []string) error {
-	return nil
-}
-
-func (g *Scaff) AddJoin(fromID, toID string, condition FollowIf) error {
-	from := g.blockByID(fromID)
-	if from == nil {
-		return ErrBlockNotFound{
-			ID: fromID,
-		}
-	}
-	to := g.blockByID(toID)
-	if to == nil {
-		return ErrBlockNotFound{
-			ID: toID,
-		}
-	}
-	if g.joins == nil {
-		g.joins = make(map[string][]*Join)
-	}
-	e := &Join{From: from, To: to, Condition: condition}
-	if _, ok := g.joins[from.Name]; !ok {
-		g.joins[from.Name] = []*Join{}
-	}
-	g.joins[from.Name] = append(g.joins[from.Name], e)
-	return nil
 }
 
 func (g *Scaff) Go(graph *Graph) error {
@@ -179,7 +151,7 @@ func (g *Scaff) runBlock(n *Block, triggeringNS *ReadableNode) ([]*Block, *Node,
 	}
 	nextBlocks := []*Block{}
 	s.MarkDone()
-	if joins, ok := g.joins[n.Name]; ok {
+	if joins, ok := g.Joins().Get(n.Name); ok {
 		for _, e := range joins {
 			t, err := e.TriggersMet(r)
 			if err != nil {
@@ -191,4 +163,13 @@ func (g *Scaff) runBlock(n *Block, triggeringNS *ReadableNode) ([]*Block, *Node,
 		}
 	}
 	return nextBlocks, s, nil
+}
+
+func (g *Scaff) Joins() *Joins {
+	if g.joins == nil {
+		g.joins = &Joins{
+			Scaff: g,
+		}
+	}
+	return g.joins
 }

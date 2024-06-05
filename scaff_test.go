@@ -83,7 +83,7 @@ func TestScaff_NodeHasError(t *testing.T) {
 	n1 := g.AddBlock("action1", a1)
 	n2 := g.AddBlock("action2", a2)
 
-	g.AddJoin(n1, n2, nil)
+	g.Joins().Add(n1, n2, nil)
 
 	g.SetEntrypoint(n1)
 	graph := &goraff.Graph{}
@@ -107,8 +107,8 @@ func TestScaff_Go_WithJoins(t *testing.T) {
 
 	g.SetEntrypoint(n1)
 	// with no condition we always follow the join
-	g.AddJoin(n1, n2, nil)
-	g.AddJoin(n2, n3, nil)
+	g.Joins().Add(n1, n2, nil)
+	g.Joins().Add(n2, n3, nil)
 	// No join from n3, so it should stop after n3
 	graph := &goraff.Graph{}
 	err := g.Go(graph)
@@ -136,8 +136,8 @@ func TestScaff_ConditionalJoins(t *testing.T) {
 
 	g.SetEntrypoint(n1)
 	// Both n2 and n3 should follow n1, but only n3 should match the condition
-	g.AddJoin(n1, n2, goraff.FollowIfKeyMatches(n1, "action1_key", "should not match"))
-	g.AddJoin(n1, n3, goraff.FollowIfKeyMatches(n1, "action1_key", "action1"))
+	g.Joins().Add(n1, n2, goraff.FollowIfKeyMatches(n1, "action1_key", "should not match"))
+	g.Joins().Add(n1, n3, goraff.FollowIfKeyMatches(n1, "action1_key", "action1"))
 
 	graph := &goraff.Graph{}
 	err := g.Go(graph)
@@ -151,7 +151,7 @@ func TestScaff_ConditionalJoins(t *testing.T) {
 func TestScaff_AddJoin_Node1NotFound(t *testing.T) {
 	assert := assert.New(t)
 	g := &goraff.Scaff{}
-	err := g.AddJoin("node1", "node2", nil)
+	err := g.Joins().Add("node1", "node2", nil)
 	assert.Error(err)
 	assert.Equal("block not found: node1", err.Error())
 }
@@ -161,7 +161,7 @@ func TestScaff_AddJoin_Node2NotFound(t *testing.T) {
 	g := &goraff.Scaff{}
 	a1 := &actionMock{name: "action1"}
 	n1 := g.AddBlock("action1", a1)
-	err := g.AddJoin(n1, "node2", nil)
+	err := g.Joins().Add(n1, "node2", nil)
 	assert.Error(err)
 	assert.Equal("block not found: node2", err.Error())
 }
@@ -185,9 +185,9 @@ func TestScaff_FanOutNodes_Parallel(t *testing.T) {
 	n4 := g.AddBlock("action4", a4)
 
 	g.SetEntrypoint(n1)
-	g.AddJoin(n1, n2, nil)
-	g.AddJoin(n1, n3, nil)
-	g.AddJoin(n1, n4, nil)
+	g.Joins().Add(n1, n2, nil)
+	g.Joins().Add(n1, n3, nil)
+	g.Joins().Add(n1, n4, nil)
 
 	start := time.Now()
 
@@ -236,9 +236,9 @@ func TestScaff_StateIsMarkedDoneBeforeTriggers(t *testing.T) {
 	n3 := g.AddBlock("action3", a3)
 
 	g.SetEntrypoint(n1)
-	g.AddJoin(n1, n2, nil)
+	g.Joins().Add(n1, n2, nil)
 	followIf := &mockFollowIfWantsDone{nodeIDs: []string{n2}, t: t}
-	g.AddJoin(n2, n3, followIf)
+	g.Joins().Add(n2, n3, followIf)
 
 	graph := &goraff.Graph{}
 	err := g.Go(graph)
@@ -299,7 +299,7 @@ func TestScaff_FlowMgr_ReaderPassing(t *testing.T) {
 	n2 := g.AddBlock("action2", checkReaderAction2)
 
 	g.SetEntrypoint(n1)
-	g.AddJoin(n1, n2, nil)
+	g.Joins().Add(n1, n2, nil)
 
 	graph := &goraff.Graph{}
 	err := g.Go(graph)

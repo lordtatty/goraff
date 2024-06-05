@@ -7,6 +7,46 @@ type FollowIf interface {
 	Match(s *ReadableGraph) (bool, error)
 }
 
+// Manage joins
+type Joins struct {
+	joins map[string][]*Join
+	Scaff *Scaff
+}
+
+func (j *Joins) Add(fromName, toName string, condition FollowIf) error {
+	if j.Scaff == nil {
+		return fmt.Errorf("joins must be associated with a scaff")
+	}
+	from := j.Scaff.BlockByName(fromName)
+	if from == nil {
+		return ErrBlockNotFound{
+			ID: fromName,
+		}
+	}
+	to := j.Scaff.BlockByName(toName)
+	if to == nil {
+		return ErrBlockNotFound{
+			ID: toName,
+		}
+	}
+	if j.joins == nil {
+		j.joins = make(map[string][]*Join)
+	}
+	e := &Join{From: from, To: to, Condition: condition}
+	if _, ok := j.joins[fromName]; !ok {
+		j.joins[fromName] = []*Join{}
+	}
+	j.joins[fromName] = append(j.joins[fromName], e)
+	return nil
+}
+
+func (j *Joins) Get(from string) ([]*Join, bool) {
+	if _, ok := j.joins[from]; !ok {
+		return nil, false
+	}
+	return j.joins[from], true
+}
+
 // Join connects two blocks in a scaff
 type Join struct {
 	From      *Block
