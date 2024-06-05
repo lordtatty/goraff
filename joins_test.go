@@ -13,7 +13,7 @@ func TestJoinCondition_KeyMatches(t *testing.T) {
 	join := &goraff.Join{}
 	join.Condition = sut
 	graph := &goraff.Graph{}
-	graph.NewNode("node1").SetStr("key1", "value1")
+	graph.NewNode("node1", nil).SetStr("key1", "value1")
 	readable := goraff.NewReadableGraph(graph)
 	assert.True(join.TriggersMet(readable))
 }
@@ -24,7 +24,7 @@ func TestJoinCondition_KeyMatches_Fails(t *testing.T) {
 	join := &goraff.Join{}
 	join.Condition = sut
 	graph := &goraff.Graph{}
-	graph.NewNode("node1").SetStr("key1", "value2")
+	graph.NewNode("node1", nil).SetStr("key1", "value2")
 	readable := goraff.NewReadableGraph(graph)
 	assert.False(join.TriggersMet(readable))
 }
@@ -35,8 +35,8 @@ func TestJoinCondition_NodesCompleted(t *testing.T) {
 	join := &goraff.Join{}
 	join.Condition = sut
 	graph := &goraff.Graph{}
-	graph.NewNode("node1").MarkDone()
-	graph.NewNode("node2").MarkDone()
+	graph.NewNode("node1", nil).MarkDone()
+	graph.NewNode("node2", nil).MarkDone()
 	readable := goraff.NewReadableGraph(graph)
 	assert.True(join.TriggersMet(readable))
 }
@@ -47,8 +47,8 @@ func TestJoinCondition_NodesCompleted_Fails(t *testing.T) {
 	join := &goraff.Join{}
 	join.Condition = sut
 	graph := &goraff.Graph{}
-	graph.NewNode("node1").MarkDone()
-	graph.NewNode("node2") // not marked done
+	graph.NewNode("node1", nil).MarkDone()
+	graph.NewNode("node2", nil) // not marked done
 	readable := goraff.NewReadableGraph(graph)
 	assert.False(join.TriggersMet(readable))
 }

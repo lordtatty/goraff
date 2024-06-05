@@ -8,13 +8,14 @@ import (
 
 // Node state represents a key value store for an individual node
 type Node struct {
-	id       string
-	name     string
-	state    map[string][]byte
-	done     bool
-	notifier ChangeNotifier
-	subGraph *Graph
-	mut      sync.Mutex
+	id          string
+	name        string
+	state       map[string][]byte
+	done        bool
+	notifier    ChangeNotifier
+	subGraph    *Graph
+	mut         sync.Mutex
+	triggeredBy []*ReadableNode
 }
 
 func (n *Node) SetSubGraph(s *Graph) {
@@ -100,4 +101,8 @@ func (s *ReadableNode) Name() string {
 
 func (s *ReadableNode) Done() bool {
 	return s.node.done
+}
+
+func (n *ReadableNode) TriggeredBy() []*ReadableNode {
+	return n.node.triggeredBy
 }

@@ -15,7 +15,7 @@ func TestNodeState_SubState(t *testing.T) {
 	s := &goraff.Graph{}
 	n.SetSubGraph(s)
 
-	sn := s.NewNode("subnode")
+	sn := s.NewNode("subnode", nil)
 	sn.SetStr("key1", "value1")
 
 	subGraph := n.Reader().SubGraph()
@@ -161,6 +161,35 @@ func TestNode_ConcurrentReadWrite(t *testing.T) {
 	for i := 0; i < 100; i++ {
 		assert.Equal(value, state[key+strconv.Itoa(i)])
 	}
+}
+
+func TestNode_TriggeredBy(t *testing.T) {
+	assert := assert.New(t)
+
+	graph := &goraff.Graph{}
+	graph.NewNode("parent1", nil)
+	graph.NewNode("parent2", nil)
+	graph.NewNode("parent3", nil)
+
+	rGraph := goraff.NewReadableGraph(graph)
+
+	rParent1, err := rGraph.FirstNodeByName("parent1")
+	assert.Nil(err)
+	rParent2, err := rGraph.FirstNodeByName("parent2")
+	assert.Nil(err)
+	rParent3, err := rGraph.FirstNodeByName("parent3")
+	assert.Nil(err)
+
+	graph.NewNode("sut_node", []*goraff.ReadableNode{rParent1, rParent2, rParent3})
+
+	sut, err := rGraph.FirstNodeByName("sut_node")
+	assert.Nil(err)
+
+	triggeredBy := sut.TriggeredBy()
+	assert.Equal(3, len(triggeredBy))
+	assert.Equal(rParent1.ID(), triggeredBy[0].ID())
+	assert.Equal(rParent2.ID(), triggeredBy[1].ID())
+	assert.Equal(rParent3.ID(), triggeredBy[2].ID())
 }
 
 // MockNotifier is a mock implementation of the Notifier interface for testing purposes

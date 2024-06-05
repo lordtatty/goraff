@@ -38,14 +38,14 @@ func TestState_NodeStateByName(t *testing.T) {
 	assert := assert.New(t)
 	s := goraff.Graph{}
 	// Test that this creates a new node state
-	n := s.NewNode("node1")
+	n := s.NewNode("node1", nil)
 	n.SetStr("key1", "value1")
 	n.SetStr("key2", "value2")
 	r := n.Reader()
 	assert.Equal("value1", r.GetStr("key1"))
 	assert.Equal("value2", r.GetStr("key2"))
 	// Test that this returns the same already-created state
-	n2 := s.NewNode("node1")
+	n2 := s.NewNode("node1", nil)
 	assert.Equal("value1", r.GetStr("key1"))
 	assert.Equal("value2", r.GetStr("key2"))
 	// Test the id
@@ -57,7 +57,7 @@ func TestState_NodeStateByID(t *testing.T) {
 	assert := assert.New(t)
 	s := goraff.Graph{}
 	// Test that this creates a new node state
-	n := s.NewNode("node1")
+	n := s.NewNode("node1", nil)
 	n.SetStr("key1", "value1")
 	n.SetStr("key", "value2")
 	r := n.Reader()
@@ -76,7 +76,7 @@ func TestState_StateReadOnly(t *testing.T) {
 	assert := assert.New(t)
 	s := &goraff.Graph{}
 	// Test that this creates a new node state
-	n := s.NewNode("node1")
+	n := s.NewNode("node1", nil)
 	n.SetStr("key1", "value1")
 	n.SetStr("key2", "value2")
 	r := goraff.NewReadableGraph(s)
@@ -90,7 +90,7 @@ func TestState_StateReadOnly_ID(t *testing.T) {
 	assert := assert.New(t)
 	s := &goraff.Graph{}
 	// Test that this creates a new node state
-	n := s.NewNode("node1")
+	n := s.NewNode("node1", nil)
 	n.SetStr("key1", "value1")
 	n.SetStr("key2", "value2")
 	r := goraff.NewReadableGraph(s)
@@ -108,11 +108,11 @@ func TestState_Notifier(t *testing.T) {
 
 	// Create the SUT and trigger the first node to update
 	s := &goraff.Graph{Notifier: mNotifier}
-	n := s.NewNode("node1")
+	n := s.NewNode("node1", nil)
 	n.SetStr("key", "value")
 
 	// Trigger the second node to update
-	n2 := s.NewNode("node2")
+	n2 := s.NewNode("node2", nil)
 	n2.SetStr("key", "value")
 }
 

@@ -56,6 +56,10 @@ func (e ErrBlockNotFound) Error() string {
 	return "block not found: " + e.ID
 }
 
+func AddFanOut(fromID string, toIDs []string) error {
+	return nil
+}
+
 func (g *Scaff) AddJoin(fromID, toID string, condition FollowIf) error {
 	from := g.blockByID(fromID)
 	if from == nil {
@@ -167,7 +171,7 @@ func (g *Scaff) flowMgr() error {
 }
 
 func (g *Scaff) runBlock(n *Block, triggeringNS *ReadableNode) ([]*Block, *Node, error) {
-	s := g.state.NewNode(n.Name)
+	s := g.state.NewNode(n.Name, nil)
 	r := NewReadableGraph(g.state)
 	err := n.Action.Do(s, r, triggeringNS)
 	if err != nil {

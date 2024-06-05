@@ -21,15 +21,13 @@ type Graph struct {
 	Notifier ChangeNotifier
 }
 
-func (s *Graph) NewNode(name string) *Node {
-	// Else create a new node state
-	ns := &Node{name: name, notifier: s.Notifier}
+func (s *Graph) NewNode(name string, trigeredBy []*ReadableNode) *Node {
+	ns := &Node{name: name, notifier: s.Notifier, triggeredBy: trigeredBy}
 	s.nodes = append(s.nodes, ns)
 	return ns
 }
 
 func (s *Graph) NodeByName(name string) []*Node {
-	// First see if we have this node state
 	result := []*Node{}
 	for _, ns := range s.nodes {
 		if ns.name == name {
@@ -40,7 +38,6 @@ func (s *Graph) NodeByName(name string) []*Node {
 }
 
 func (s *Graph) FirstNodeByName(name string) *Node {
-	// First see if we have this node state
 	for _, ns := range s.nodes {
 		if ns.name == name {
 			return ns
@@ -50,7 +47,6 @@ func (s *Graph) FirstNodeByName(name string) *Node {
 }
 
 func (s *Graph) NodeByID(id string) *Node {
-	// First see if we have this node state
 	for _, ns := range s.nodes {
 		if ns.Reader().ID() == id {
 			return ns
@@ -71,7 +67,7 @@ type ReadableGraph struct {
 func (s *ReadableGraph) NodeByID(id string) (*ReadableNode, error) {
 	r := s.graph.NodeByID(id)
 	if r == nil {
-		return nil, fmt.Errorf("Node state with id %s not found", id)
+		return nil, fmt.Errorf("Node with id %s not found", id)
 	}
 	return &ReadableNode{node: r}, nil
 }
@@ -79,7 +75,7 @@ func (s *ReadableGraph) NodeByID(id string) (*ReadableNode, error) {
 func (s *ReadableGraph) FirstNodeByName(name string) (*ReadableNode, error) {
 	st := s.graph.FirstNodeByName(name)
 	if st == nil {
-		return nil, fmt.Errorf("Node state with name %s not found", name)
+		return nil, fmt.Errorf("Node with name %s not found", name)
 	}
 	return &ReadableNode{node: st}, nil
 }
@@ -87,7 +83,7 @@ func (s *ReadableGraph) FirstNodeByName(name string) (*ReadableNode, error) {
 func (s *ReadableGraph) Node(id string) (*ReadableNode, error) {
 	r := s.graph.NodeByID(id)
 	if r == nil {
-		return nil, fmt.Errorf("Node state with id %s not found", id)
+		return nil, fmt.Errorf("Node with id %s not found", id)
 	}
 	return &ReadableNode{node: r}, nil
 }
