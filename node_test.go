@@ -21,7 +21,7 @@ func TestNodeState_SubState(t *testing.T) {
 	subGraph := n.Reader().SubGraph()
 	node, err := subGraph.NodeByID(sn.Reader().ID())
 	assert.Nil(err)
-	assert.Equal("value1", node.GetStr("key1"))
+	assert.Equal("value1", node.FirstStr("key1"))
 }
 
 func TestStateNode_Reader(t *testing.T) {
@@ -43,28 +43,41 @@ func TestNode_SetSubGraph(t *testing.T) {
 	assert.Equal(r.ID(), subGraph.ID())
 }
 
-func TestNode_Set(t *testing.T) {
+func TestNode_State(t *testing.T) {
+	assert := assert.New(t)
+	n := &goraff.Node{}
+	n.Set("key1", []byte("value1"))
+	n.Set("key2", []byte("value2"))
+
+	state := n.Reader().State()
+	assert.Equal(2, len(state))
+
+	assert.Equal([][]byte{[]byte("value1")}, state["key1"])
+	assert.Equal([][]byte{[]byte("value2")}, state["key2"])
+}
+
+func TestNode_SetGet(t *testing.T) {
 	assert := assert.New(t)
 	n := &goraff.Node{}
 	key := "testKey"
-	value := []byte("testValue")
+	expected := []byte("testValue")
 
-	n.Set(key, value)
+	n.Set(key, expected)
 
-	state := n.Reader().State()
-	assert.Equal(value, state[key])
+	result := n.Reader().First(key)
+	assert.Equal(expected, result)
 }
 
-func TestNode_SetStr(t *testing.T) {
+func TestNode_SetStrGetStr(t *testing.T) {
 	assert := assert.New(t)
 	n := &goraff.Node{}
 	key := "testKeyStr"
-	value := "testValueStr"
+	expected := "testValueStr"
 
-	n.SetStr(key, value)
+	n.SetStr(key, expected)
 
-	state := n.Reader().State()
-	assert.Equal([]byte(value), state[key])
+	result := n.Reader().FirstStr(key)
+	assert.Equal(expected, result)
 }
 
 func TestNode_MarkDone(t *testing.T) {
@@ -85,7 +98,7 @@ func TestReadableNode_Get(t *testing.T) {
 	n.Set(key, value)
 
 	r := n.Reader()
-	assert.Equal(value, r.Get(key))
+	assert.Equal(value, r.First(key))
 }
 
 func TestReadableNode_GetStr(t *testing.T) {
@@ -97,7 +110,7 @@ func TestReadableNode_GetStr(t *testing.T) {
 	n.SetStr(key, value)
 
 	r := n.Reader()
-	assert.Equal(value, r.GetStr(key))
+	assert.Equal(value, r.FirstStr(key))
 }
 
 func TestReadableNode_ID(t *testing.T) {
@@ -130,7 +143,8 @@ func TestNode_ConcurrentSet(t *testing.T) {
 	state := n.Reader().State()
 	assert.Equal(100, len(state))
 	for i := 0; i < 100; i++ {
-		assert.Equal(value, state[key+strconv.Itoa(i)])
+		result := n.Reader().First(key + strconv.Itoa(i))
+		assert.Equal(value, result)
 	}
 }
 
@@ -150,7 +164,7 @@ func TestNode_ConcurrentReadWrite(t *testing.T) {
 
 		go func(i int) {
 			defer wg.Done()
-			n.Reader().Get(key + strconv.Itoa(i))
+			n.Reader().First(key + strconv.Itoa(i))
 		}(i)
 	}
 
@@ -159,7 +173,8 @@ func TestNode_ConcurrentReadWrite(t *testing.T) {
 	state := n.Reader().State()
 	assert.Equal(100, len(state))
 	for i := 0; i < 100; i++ {
-		assert.Equal(value, state[key+strconv.Itoa(i)])
+		result := n.Reader().First(key + strconv.Itoa(i))
+		assert.Equal(value, result)
 	}
 }
 
@@ -190,6 +205,54 @@ func TestNode_TriggeredBy(t *testing.T) {
 	assert.Equal(rParent1.ID(), triggeredBy[0].ID())
 	assert.Equal(rParent2.ID(), triggeredBy[1].ID())
 	assert.Equal(rParent3.ID(), triggeredBy[2].ID())
+}
+
+func TestNode_Add(t *testing.T) {
+	assert := assert.New(t)
+	n := &goraff.Node{}
+	key := "testKey"
+	value1 := []byte("testValue")
+	value2 := []byte("testValue2")
+	value3 := []byte("testValue3")
+
+	n.Add(key, value1)
+	n.Add(key, value2)
+	n.Add(key, value3)
+
+	state := n.Reader().State()
+	assert.Equal(3, len(state[key]))
+
+	assert.Equal([][]byte{value1, value2, value3}, state[key])
+
+	all := n.Reader().All(key)
+	assert.Equal(3, len(all))
+	assert.Equal(value1, all[0])
+	assert.Equal(value2, all[1])
+	assert.Equal(value3, all[2])
+}
+
+func TestNode_AddStr(t *testing.T) {
+	assert := assert.New(t)
+	n := &goraff.Node{}
+	key := "testKey"
+	value1 := "testValue"
+	value2 := "testValue2"
+	value3 := "testValue3"
+
+	n.AddStr(key, value1)
+	n.AddStr(key, value2)
+	n.AddStr(key, value3)
+
+	state := n.Reader().State()
+	assert.Equal(3, len(state[key]))
+
+	assert.Equal([][]byte{[]byte(value1), []byte(value2), []byte(value3)}, state[key])
+
+	all := n.Reader().AllStr(key)
+	assert.Equal(3, len(all))
+	assert.Equal(value1, all[0])
+	assert.Equal(value2, all[1])
+	assert.Equal(value3, all[2])
 }
 
 // MockNotifier is a mock implementation of the Notifier interface for testing purposes

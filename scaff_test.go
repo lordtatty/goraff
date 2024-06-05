@@ -44,7 +44,7 @@ func (a *actionMock) Do(s *goraff.Node, r *goraff.ReadableGraph, triggeringNS *g
 		return nil
 	}
 	lastKey := fmt.Sprintf("%s_key", a.lastName)
-	lastVal := triggeringNS.GetStr(lastKey)
+	lastVal := triggeringNS.FirstStr(lastKey)
 	// split string on " :: " and take the last element
 	parts := strings.Split(lastVal, " :: ")
 	lastVal = parts[len(parts)-1]
@@ -69,7 +69,7 @@ func TestScaff_Go_NoJoins(t *testing.T) {
 	// Should only be one state for action1, as it should only have run once, and the key should be set to the action name
 	states := graph.NodeByName("action1")
 	assert.Len(states, 1)
-	assert.Equal("action1", states[0].Reader().GetStr("action1_key"))
+	assert.Equal("action1", states[0].Reader().FirstStr("action1_key"))
 	// action2 should not have run
 	assert.Len(graph.NodeByName("action2"), 0)
 }
@@ -115,11 +115,11 @@ func TestScaff_Go_WithJoins(t *testing.T) {
 	assert.NoError(err)
 
 	assert.Len(graph.NodeByName("action1"), 1)
-	assert.Equal("action1", graph.NodeByName("action1")[0].Reader().GetStr("action1_key"))
+	assert.Equal("action1", graph.NodeByName("action1")[0].Reader().FirstStr("action1_key"))
 	assert.Len(graph.NodeByName("action2"), 1)
-	assert.Equal("action1 :: action2", graph.NodeByName("action2")[0].Reader().GetStr("action2_key"))
+	assert.Equal("action1 :: action2", graph.NodeByName("action2")[0].Reader().FirstStr("action2_key"))
 	assert.Len(graph.NodeByName("action3"), 1)
-	assert.Equal("action2 :: action3", graph.NodeByName("action3")[0].Reader().GetStr("action3_key"))
+	assert.Equal("action2 :: action3", graph.NodeByName("action3")[0].Reader().FirstStr("action3_key"))
 	assert.Len(graph.NodeByName("action4"), 0) // Action 4 should not have run
 }
 
@@ -143,9 +143,9 @@ func TestScaff_ConditionalJoins(t *testing.T) {
 	err := g.Go(graph)
 	assert.NoError(err)
 
-	assert.Equal("action1", graph.FirstNodeByName(n1).Reader().GetStr("action1_key"))
+	assert.Equal("action1", graph.FirstNodeByName(n1).Reader().FirstStr("action1_key"))
 	assert.Nil(graph.NodeByID(n2)) // Action 2 should not have run
-	assert.Equal("action1 :: action3", graph.FirstNodeByName(n3).Reader().GetStr("action3_key"))
+	assert.Equal("action1 :: action3", graph.FirstNodeByName(n3).Reader().FirstStr("action3_key"))
 }
 
 func TestScaff_FanOutNodes_Parallel(t *testing.T) {
@@ -180,10 +180,10 @@ func TestScaff_FanOutNodes_Parallel(t *testing.T) {
 	elapsed := time.Since(start)
 	assert.True(elapsed < 2500*time.Millisecond, "Elapsed time should be less than 2.5 seconds (first node, parallel nodes, and a bit of leeway)")
 
-	assert.Equal("action1", graph.FirstNodeByName(n1).Reader().GetStr("action1_key"))
-	assert.Equal("action1 :: action2", graph.FirstNodeByName(n2).Reader().GetStr("action2_key"))
-	assert.Equal("action1 :: action3", graph.FirstNodeByName(n3).Reader().GetStr("action3_key"))
-	assert.Equal("action1 :: action4", graph.FirstNodeByName(n4).Reader().GetStr("action4_key"))
+	assert.Equal("action1", graph.FirstNodeByName(n1).Reader().FirstStr("action1_key"))
+	assert.Equal("action1 :: action2", graph.FirstNodeByName(n2).Reader().FirstStr("action2_key"))
+	assert.Equal("action1 :: action3", graph.FirstNodeByName(n3).Reader().FirstStr("action3_key"))
+	assert.Equal("action1 :: action4", graph.FirstNodeByName(n4).Reader().FirstStr("action4_key"))
 }
 
 type mockFollowIfWantsDone struct {
@@ -226,9 +226,9 @@ func TestScaff_StateIsMarkedDoneBeforeTriggers(t *testing.T) {
 	err := g.Go(graph)
 	assert.NoError(err)
 
-	assert.Equal("action1", graph.FirstNodeByName(n1).Reader().GetStr("action1_key"))
-	assert.Equal("action1 :: action2", graph.FirstNodeByName(n2).Reader().GetStr("action2_key"))
-	assert.Equal("action2 :: action3", graph.FirstNodeByName(n3).Reader().GetStr("action3_key"))
+	assert.Equal("action1", graph.FirstNodeByName(n1).Reader().FirstStr("action1_key"))
+	assert.Equal("action1 :: action2", graph.FirstNodeByName(n2).Reader().FirstStr("action2_key"))
+	assert.Equal("action2 :: action3", graph.FirstNodeByName(n3).Reader().FirstStr("action3_key"))
 }
 
 func TestScaff_EntrypointNotSet(t *testing.T) {
@@ -287,8 +287,8 @@ func TestScaff_FlowMgr_ReaderPassing(t *testing.T) {
 	err := g.Go(graph)
 	assert.NoError(err)
 
-	assert.Equal("reader is nil", graph.FirstNodeByName(n1).Reader().GetStr("check_reader_key"))
-	assert.Equal("reader is not nil", graph.FirstNodeByName(n2).Reader().GetStr("check_reader_key"))
+	assert.Equal("reader is nil", graph.FirstNodeByName(n1).Reader().FirstStr("check_reader_key"))
+	assert.Equal("reader is not nil", graph.FirstNodeByName(n2).Reader().FirstStr("check_reader_key"))
 }
 
 func TestScaff_Go_ValidateEntrypoint(t *testing.T) {

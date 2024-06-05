@@ -20,6 +20,11 @@ func TestOutputter(t *testing.T) {
 	n1.SetStr("key2", "value2")
 	n1.SetSubGraph(subgraph)
 
+	n2 := g.NewNode("node2", nil)
+	n2.AddStr("key", "value0")
+	n2.AddStr("key", "value1")
+	n2.AddStr("key", "value2")
+
 	r := goraff.NewReadableGraph(g)
 
 	sut := &outputs.Outputter{}
@@ -30,7 +35,7 @@ func TestOutputter(t *testing.T) {
 		States: []outputs.GraphOutput{
 			{
 				ID:      r.ID(),
-				NodeIDs: []string{n1.Reader().ID()},
+				NodeIDs: []string{n1.Reader().ID(), n2.Reader().ID()},
 			},
 			{
 				ID:      subgraphReadable.ID(),
@@ -51,6 +56,16 @@ func TestOutputter(t *testing.T) {
 				Name: subnode.Reader().Name(),
 				Vals: []outputs.NodeOutputVal{
 					{Name: "key1", Value: "value1"},
+				},
+				SubGraphID: "",
+			},
+			{
+				ID:   n2.Reader().ID(),
+				Name: n2.Reader().Name(),
+				Vals: []outputs.NodeOutputVal{
+					{Name: "key_0", Value: "value0"},
+					{Name: "key_1", Value: "value1"},
+					{Name: "key_2", Value: "value2"},
 				},
 				SubGraphID: "",
 			},

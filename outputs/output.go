@@ -115,8 +115,14 @@ func (o *Outputter) allNodes(s *goraff.ReadableGraph) ([]NodeOutput, error) {
 
 func (o *Outputter) node(ns *goraff.ReadableNode) *NodeOutput {
 	vals := []NodeOutputVal{}
-	for k, v := range ns.State() {
-		vals = append(vals, NodeOutputVal{Name: k, Value: string(v)})
+	for k, arr := range ns.State() {
+		for i, v := range arr {
+			key := k
+			if len(arr) > 1 {
+				key = fmt.Sprintf("%s_%d", k, i)
+			}
+			vals = append(vals, NodeOutputVal{Name: key, Value: string(v)})
+		}
 	}
 	subID := ""
 	if ns.SubGraph() != nil {

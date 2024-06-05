@@ -56,12 +56,12 @@ func TestLLM_Do(t *testing.T) {
 		want := strings.Join(expectedMessages[:msgIdx], "")
 		n, err := r.FirstNodeByName("node1")
 		assert.NoError(err)
-		assert.Equal(want, n.GetStr("result"))
+		assert.Equal(want, n.FirstStr("result"))
 	})
 	n := s.NewNode("node1", nil)
 
 	err := sut.Do(n, r, nil)
 	assert.NoError(err)
 	assert.Equal(msgIdx, len(expectedMessages))
-	assert.Equal(expectedResult, n.Reader().GetStr("result"))
+	assert.Equal(expectedResult, n.Reader().FirstStr("result"))
 }

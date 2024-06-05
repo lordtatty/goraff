@@ -48,12 +48,12 @@ func (l *LLM) buildIncludes(r *goraff.ReadableGraph) (string, error) {
 		if err != nil {
 			return "", fmt.Errorf("error getting node state: %w", err)
 		}
-		wants := n.GetStr("result")
+		wants := n.FirstStr("result")
 		n, err = r.FirstNodeByName(output)
 		if err != nil {
 			return "", fmt.Errorf("error getting node state: %w", err)
 		}
-		name := n.GetStr("name")
+		name := n.FirstStr("name")
 		wantStr := fmt.Sprintf("NAME: %s", name)
 		resultStr := fmt.Sprintf("RESULT: %s", wants)
 		result += fmt.Sprintf("### OUTPUT BLOCK START###\n%s\n%s\n### OUTPUT BLOCK END###\n", wantStr, resultStr)

@@ -94,7 +94,7 @@ func (e *followIfKeyMatchesName) Match(s *ReadableGraph) (bool, error) {
 	if err != nil {
 		return false, fmt.Errorf("error getting node state: %w", err)
 	}
-	return n.GetStr(e.Key) == e.Value, nil
+	return n.FirstStr(e.Key) == e.Value, nil
 }
 
 func FollowIfKeyMatches(nodeID, key, value string) FollowIf {
