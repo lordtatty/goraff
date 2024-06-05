@@ -11,12 +11,12 @@ import (
 func TestOutputter(t *testing.T) {
 	assert := assert.New(t)
 	subgraph := &goraff.Graph{}
-	subnode := subgraph.NewNode("subnode")
+	subnode := subgraph.NewNode("subnode", nil)
 	subnode.SetStr("key1", "value1")
 	subgraphReadable := goraff.NewReadableGraph(subgraph)
 
 	g := &goraff.Graph{}
-	n1 := g.NewNode("node1")
+	n1 := g.NewNode("node1", nil)
 	n1.SetStr("key2", "value2")
 	n1.SetSubGraph(subgraph)
 

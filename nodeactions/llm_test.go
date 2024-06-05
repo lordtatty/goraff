@@ -58,7 +58,7 @@ func TestLLM_Do(t *testing.T) {
 		assert.NoError(err)
 		assert.Equal(want, n.GetStr("result"))
 	})
-	n := s.NewNode("node1")
+	n := s.NewNode("node1", nil)
 
 	err := sut.Do(n, r, nil)
 	assert.NoError(err)
