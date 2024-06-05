@@ -23,7 +23,7 @@ func TestPrint_DoWithTriggeringNode(t *testing.T) {
 	s := &goraff.Node{}
 	r := &goraff.ReadableGraph{}
 	tn := &goraff.Node{}
-	triggeringNode := tn.Reader()
+	triggeringNode := tn.Get()
 	err := sut.Do(s, r, triggeringNode)
 	assert.NoError(err)
 }

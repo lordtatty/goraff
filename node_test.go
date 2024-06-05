@@ -18,8 +18,8 @@ func TestNodeState_SubState(t *testing.T) {
 	sn := s.NewNode("subnode", nil)
 	sn.SetStr("key1", "value1")
 
-	subGraph := n.Reader().SubGraph()
-	node, err := subGraph.NodeByID(sn.Reader().ID())
+	subGraph := n.Get().SubGraph()
+	node, err := subGraph.NodeByID(sn.Get().ID())
 	assert.Nil(err)
 	assert.Equal("value1", node.FirstStr("key1"))
 }
@@ -27,8 +27,8 @@ func TestNodeState_SubState(t *testing.T) {
 func TestStateNode_Reader(t *testing.T) {
 	assert := assert.New(t)
 	n := &goraff.Node{}
-	r := n.Reader()
-	assert.Equal(n.Reader().ID(), r.ID())
+	r := n.Get()
+	assert.Equal(n.Get().ID(), r.ID())
 }
 
 func TestNode_SetSubGraph(t *testing.T) {
@@ -38,7 +38,7 @@ func TestNode_SetSubGraph(t *testing.T) {
 	r := goraff.NewReadableGraph(s)
 	n.SetSubGraph(s)
 
-	subGraph := n.Reader().SubGraph()
+	subGraph := n.Get().SubGraph()
 	assert.NotNil(subGraph)
 	assert.Equal(r.ID(), subGraph.ID())
 }
@@ -49,7 +49,7 @@ func TestNode_State(t *testing.T) {
 	n.Set("key1", []byte("value1"))
 	n.Set("key2", []byte("value2"))
 
-	state := n.Reader().State()
+	state := n.Get().State()
 	assert.Equal(2, len(state))
 
 	assert.Equal([][]byte{[]byte("value1")}, state["key1"])
@@ -64,7 +64,7 @@ func TestNode_SetGet(t *testing.T) {
 
 	n.Set(key, expected)
 
-	result := n.Reader().First(key)
+	result := n.Get().First(key)
 	assert.Equal(expected, result)
 }
 
@@ -76,7 +76,7 @@ func TestNode_SetStrGetStr(t *testing.T) {
 
 	n.SetStr(key, expected)
 
-	result := n.Reader().FirstStr(key)
+	result := n.Get().FirstStr(key)
 	assert.Equal(expected, result)
 }
 
@@ -86,7 +86,7 @@ func TestNode_MarkDone(t *testing.T) {
 
 	n.MarkDone()
 
-	assert.True(n.Reader().Done())
+	assert.True(n.Get().Done())
 }
 
 func TestReadableNode_Get(t *testing.T) {
@@ -97,7 +97,7 @@ func TestReadableNode_Get(t *testing.T) {
 
 	n.Set(key, value)
 
-	r := n.Reader()
+	r := n.Get()
 	assert.Equal(value, r.First(key))
 }
 
@@ -109,14 +109,14 @@ func TestReadableNode_GetStr(t *testing.T) {
 
 	n.SetStr(key, value)
 
-	r := n.Reader()
+	r := n.Get()
 	assert.Equal(value, r.FirstStr(key))
 }
 
 func TestReadableNode_ID(t *testing.T) {
 	assert := assert.New(t)
 	n := &goraff.Node{}
-	r := n.Reader()
+	r := n.Get()
 
 	id := r.ID()
 	assert.NotEmpty(id)
@@ -140,10 +140,10 @@ func TestNode_ConcurrentSet(t *testing.T) {
 
 	wg.Wait()
 
-	state := n.Reader().State()
+	state := n.Get().State()
 	assert.Equal(100, len(state))
 	for i := 0; i < 100; i++ {
-		result := n.Reader().First(key + strconv.Itoa(i))
+		result := n.Get().First(key + strconv.Itoa(i))
 		assert.Equal(value, result)
 	}
 }
@@ -164,16 +164,16 @@ func TestNode_ConcurrentReadWrite(t *testing.T) {
 
 		go func(i int) {
 			defer wg.Done()
-			n.Reader().First(key + strconv.Itoa(i))
+			n.Get().First(key + strconv.Itoa(i))
 		}(i)
 	}
 
 	wg.Wait()
 
-	state := n.Reader().State()
+	state := n.Get().State()
 	assert.Equal(100, len(state))
 	for i := 0; i < 100; i++ {
-		result := n.Reader().First(key + strconv.Itoa(i))
+		result := n.Get().First(key + strconv.Itoa(i))
 		assert.Equal(value, result)
 	}
 }
@@ -219,12 +219,12 @@ func TestNode_Add(t *testing.T) {
 	n.Add(key, value2)
 	n.Add(key, value3)
 
-	state := n.Reader().State()
+	state := n.Get().State()
 	assert.Equal(3, len(state[key]))
 
 	assert.Equal([][]byte{value1, value2, value3}, state[key])
 
-	all := n.Reader().All(key)
+	all := n.Get().All(key)
 	assert.Equal(3, len(all))
 	assert.Equal(value1, all[0])
 	assert.Equal(value2, all[1])
@@ -243,12 +243,12 @@ func TestNode_AddStr(t *testing.T) {
 	n.AddStr(key, value2)
 	n.AddStr(key, value3)
 
-	state := n.Reader().State()
+	state := n.Get().State()
 	assert.Equal(3, len(state[key]))
 
 	assert.Equal([][]byte{[]byte(value1), []byte(value2), []byte(value3)}, state[key])
 
-	all := n.Reader().AllStr(key)
+	all := n.Get().AllStr(key)
 	assert.Equal(3, len(all))
 	assert.Equal(value1, all[0])
 	assert.Equal(value2, all[1])

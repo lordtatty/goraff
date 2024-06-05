@@ -100,7 +100,7 @@ func (g *Scaff) flowMgr() error {
 				}
 				var tr *ReadableNode = nil
 				if n.triggeringNS != nil {
-					tr = n.triggeringNS.Reader()
+					tr = n.triggeringNS.Get()
 				}
 				nextBlocks, compeltedState, err := g.runBlock(n.Block, tr)
 				if err != nil {

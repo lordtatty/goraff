@@ -63,5 +63,5 @@ func TestLLM_Do(t *testing.T) {
 	err := sut.Do(n, r, nil)
 	assert.NoError(err)
 	assert.Equal(msgIdx, len(expectedMessages))
-	assert.Equal(expectedResult, n.Reader().FirstStr("result"))
+	assert.Equal(expectedResult, n.Get().FirstStr("result"))
 }

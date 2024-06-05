@@ -48,7 +48,7 @@ func (s *Graph) FirstNodeByName(name string) *Node {
 
 func (s *Graph) NodeByID(id string) *Node {
 	for _, ns := range s.nodes {
-		if ns.Reader().ID() == id {
+		if ns.Get().ID() == id {
 			return ns
 		}
 	}
@@ -91,7 +91,7 @@ func (s *ReadableGraph) Node(id string) (*ReadableNode, error) {
 func (s *ReadableGraph) NodeIDs() []string {
 	ids := []string{}
 	for _, ns := range s.graph.nodes {
-		ids = append(ids, ns.Reader().ID())
+		ids = append(ids, ns.Get().ID())
 	}
 	return ids
 }

@@ -13,7 +13,7 @@ func TestNodeState(t *testing.T) {
 	n := goraff.Node{}
 	n.SetStr("key1", "value1")
 	n.SetStr("key2", "value2")
-	r := n.Reader()
+	r := n.Get()
 	assert.Equal("value1", r.FirstStr("key1"))
 	assert.Equal("value2", r.FirstStr("key2"))
 	n.SetStr("key3", "value3")
@@ -25,13 +25,13 @@ func TestNodeState(t *testing.T) {
 func TestNodeState_GetOnUninitialisedState(t *testing.T) {
 	assert := assert.New(t)
 	n := goraff.Node{}
-	assert.Equal("", n.Reader().FirstStr("key1"))
+	assert.Equal("", n.Get().FirstStr("key1"))
 }
 
 func TestNodeState_ID(t *testing.T) {
 	assert := assert.New(t)
 	n := goraff.Node{}
-	assert.Regexp("^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$", n.Reader().ID())
+	assert.Regexp("^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$", n.Get().ID())
 }
 
 func TestState_NodeStateByName(t *testing.T) {
@@ -41,7 +41,7 @@ func TestState_NodeStateByName(t *testing.T) {
 	n := s.NewNode("node1", nil)
 	n.SetStr("key1", "value1")
 	n.SetStr("key2", "value2")
-	r := n.Reader()
+	r := n.Get()
 	assert.Equal("value1", r.FirstStr("key1"))
 	assert.Equal("value2", r.FirstStr("key2"))
 	// Test that this returns the same already-created state
@@ -49,7 +49,7 @@ func TestState_NodeStateByName(t *testing.T) {
 	assert.Equal("value1", r.FirstStr("key1"))
 	assert.Equal("value2", r.FirstStr("key2"))
 	// Test the id
-	r2 := n2.Reader()
+	r2 := n2.Get()
 	assert.Equal("node1", r2.Name())
 }
 
@@ -60,15 +60,15 @@ func TestState_NodeStateByID(t *testing.T) {
 	n := s.NewNode("node1", nil)
 	n.SetStr("key1", "value1")
 	n.SetStr("key", "value2")
-	r := n.Reader()
+	r := n.Get()
 	assert.Equal("value1", r.FirstStr("key1"))
 	assert.Equal("value2", r.FirstStr("key"))
 	// Test that this returns the same already-created state
-	n2 := s.NodeByID(n.Reader().ID())
+	n2 := s.NodeByID(n.Get().ID())
 	assert.Equal("value1", r.FirstStr("key1"))
 	assert.Equal("value2", r.FirstStr("key"))
 	// Test the id
-	r2 := n2.Reader()
+	r2 := n2.Get()
 	assert.Equal("node1", r2.Name())
 }
 
@@ -80,7 +80,7 @@ func TestState_StateReadOnly(t *testing.T) {
 	n.SetStr("key1", "value1")
 	n.SetStr("key2", "value2")
 	r := goraff.NewReadableGraph(s)
-	nr, err := r.Node(n.Reader().ID())
+	nr, err := r.Node(n.Get().ID())
 	assert.Nil(err)
 	assert.Equal("value1", nr.FirstStr("key1"))
 	assert.Equal("value2", nr.FirstStr("key2"))
@@ -94,7 +94,7 @@ func TestState_StateReadOnly_ID(t *testing.T) {
 	n.SetStr("key1", "value1")
 	n.SetStr("key2", "value2")
 	r := goraff.NewReadableGraph(s)
-	nr, err := r.Node(n.Reader().ID())
+	nr, err := r.Node(n.Get().ID())
 	assert.Nil(err)
 	assert.Equal("node1", nr.Name())
 }

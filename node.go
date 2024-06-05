@@ -61,7 +61,7 @@ func (n *Node) SetStr(key, value string) {
 	n.Set(key, []byte(value))
 }
 
-func (n *Node) Reader() *ReadableNode {
+func (n *Node) Get() *ReadableNode {
 	return &ReadableNode{node: n}
 }
 

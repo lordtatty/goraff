@@ -35,33 +35,33 @@ func TestOutputter(t *testing.T) {
 		States: []outputs.GraphOutput{
 			{
 				ID:      r.ID(),
-				NodeIDs: []string{n1.Reader().ID(), n2.Reader().ID()},
+				NodeIDs: []string{n1.Get().ID(), n2.Get().ID()},
 			},
 			{
 				ID:      subgraphReadable.ID(),
-				NodeIDs: []string{subnode.Reader().ID()},
+				NodeIDs: []string{subnode.Get().ID()},
 			},
 		},
 		Nodes: []outputs.NodeOutput{
 			{
-				ID:   n1.Reader().ID(),
-				Name: n1.Reader().Name(),
+				ID:   n1.Get().ID(),
+				Name: n1.Get().Name(),
 				Vals: []outputs.NodeOutputVal{
 					{Name: "key2", Value: "value2"},
 				},
 				SubGraphID: subgraphReadable.ID(),
 			},
 			{
-				ID:   subnode.Reader().ID(),
-				Name: subnode.Reader().Name(),
+				ID:   subnode.Get().ID(),
+				Name: subnode.Get().Name(),
 				Vals: []outputs.NodeOutputVal{
 					{Name: "key1", Value: "value1"},
 				},
 				SubGraphID: "",
 			},
 			{
-				ID:   n2.Reader().ID(),
-				Name: n2.Reader().Name(),
+				ID:   n2.Get().ID(),
+				Name: n2.Get().Name(),
 				Vals: []outputs.NodeOutputVal{
 					{Name: "key_0", Value: "value0"},
 					{Name: "key_1", Value: "value1"},
