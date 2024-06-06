@@ -9,10 +9,10 @@ import (
 )
 
 type NodeOutput struct {
-	ID         string          `json:"id"`
-	Name       string          `json:"name"`
-	Vals       []NodeOutputVal `json:"vals"`
-	SubGraphID string          `json:"subgraph_id"`
+	ID          string          `json:"id"`
+	Name        string          `json:"name"`
+	Vals        []NodeOutputVal `json:"vals"`
+	SubGraphIDs []string        `json:"subgraph_id"`
 }
 
 type NodeOutputVal struct {
@@ -69,11 +69,13 @@ func (o *Outputter) allStates(s *goraff.ReadableGraph) ([]GraphOutput, error) {
 		if n.SubGraph() == nil {
 			continue
 		}
-		a, err := o.allStates(n.SubGraph())
-		if err != nil {
-			return nil, fmt.Errorf("error getting node state: %w", err)
+		for _, g := range n.SubGraph() {
+			a, err := o.allStates(g)
+			if err != nil {
+				return nil, fmt.Errorf("error getting node state: %w", err)
+			}
+			states = append(states, a...)
 		}
-		states = append(states, a...)
 	}
 	return states, nil
 }
@@ -104,11 +106,13 @@ func (o *Outputter) allNodes(s *goraff.ReadableGraph) ([]NodeOutput, error) {
 		if n.SubGraph() == nil {
 			continue
 		}
-		a, err := o.allNodes(n.SubGraph())
-		if err != nil {
-			return nil, fmt.Errorf("error getting node state: %w", err)
+		for _, g := range n.SubGraph() {
+			a, err := o.allNodes(g)
+			if err != nil {
+				return nil, fmt.Errorf("error getting node state: %w", err)
+			}
+			nodes = append(nodes, a...)
 		}
-		nodes = append(nodes, a...)
 	}
 	return nodes, nil
 }
@@ -124,15 +128,15 @@ func (o *Outputter) node(ns *goraff.ReadableNode) *NodeOutput {
 			vals = append(vals, NodeOutputVal{Name: key, Value: string(v)})
 		}
 	}
-	subID := ""
-	if ns.SubGraph() != nil {
-		subID = ns.SubGraph().ID()
+	subIDs := []string{}
+	for _, ns := range ns.SubGraph() {
+		subIDs = append(subIDs, ns.ID())
 	}
 	return &NodeOutput{
-		ID:         ns.ID(),
-		Name:       ns.Name(),
-		Vals:       vals,
-		SubGraphID: subID,
+		ID:          ns.ID(),
+		Name:        ns.Name(),
+		Vals:        vals,
+		SubGraphIDs: subIDs,
 	}
 }
 

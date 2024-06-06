@@ -13,16 +13,17 @@ type Node struct {
 	state       map[string][][]byte
 	done        bool
 	notifier    ChangeNotifier
-	subGraph    *Graph
+	subGraphs   []*ReadableGraph
 	mut         sync.Mutex
 	triggeredBy []*ReadableNode
 }
 
-func (n *Node) SetSubGraph(s *Graph) {
+func (n *Node) AddSubGraph(s *Graph) {
 	n.mut.Lock()
 	defer n.mut.Unlock()
 	s.Notifier = n.notifier
-	n.subGraph = s
+	r := NewReadableGraph(s)
+	n.subGraphs = append(n.subGraphs, r)
 }
 
 func (n *Node) MarkDone() {
@@ -84,11 +85,11 @@ func (n *ReadableNode) State() map[string][][]byte {
 	return state
 }
 
-func (n *ReadableNode) SubGraph() *ReadableGraph {
-	if n.node.subGraph == nil {
+func (n *ReadableNode) SubGraph() []*ReadableGraph {
+	if n.node.subGraphs == nil {
 		return nil
 	}
-	return &ReadableGraph{n.node.subGraph}
+	return n.node.subGraphs
 }
 
 func (s *ReadableNode) First(key string) []byte {

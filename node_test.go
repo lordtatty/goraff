@@ -9,17 +9,19 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestNodeState_SubState(t *testing.T) {
+func TestNodeState_SubGraph(t *testing.T) {
 	assert := assert.New(t)
 	n := &goraff.Node{}
 	s := &goraff.Graph{}
-	n.SetSubGraph(s)
+	n.AddSubGraph(s)
 
 	sn := s.NewNode("subnode", nil)
 	sn.SetStr("key1", "value1")
 
-	subGraph := n.Get().SubGraph()
-	node, err := subGraph.NodeByID(sn.Get().ID())
+	subGraphs := n.Get().SubGraph()
+	assert.Len(subGraphs, 1)
+	sg := subGraphs[0]
+	node, err := sg.NodeByID(sn.Get().ID())
 	assert.Nil(err)
 	assert.Equal("value1", node.FirstStr("key1"))
 }
@@ -36,11 +38,13 @@ func TestNode_SetSubGraph(t *testing.T) {
 	n := &goraff.Node{}
 	s := &goraff.Graph{}
 	r := goraff.NewReadableGraph(s)
-	n.SetSubGraph(s)
+	n.AddSubGraph(s)
 
-	subGraph := n.Get().SubGraph()
-	assert.NotNil(subGraph)
-	assert.Equal(r.ID(), subGraph.ID())
+	subGraphs := n.Get().SubGraph()
+	assert.Len(subGraphs, 1)
+	sg := subGraphs[0]
+	assert.NotNil(sg)
+	assert.Equal(r.ID(), sg.ID())
 }
 
 func TestNode_State(t *testing.T) {

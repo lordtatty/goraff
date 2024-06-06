@@ -11,9 +11,9 @@ type ScaffNode struct {
 }
 
 func (g *ScaffNode) Do(s *goraff.Node, r *goraff.ReadableGraph, triggeringNS *goraff.ReadableNode) error {
-	fmt.Println("Running Graph Node")
+	fmt.Println("Running Scaff Node")
 	graph := &goraff.Graph{}
-	s.SetSubGraph(graph)
+	s.AddSubGraph(graph)
 	g.Scaff.Go(graph)
 	return nil
 }

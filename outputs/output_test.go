@@ -10,15 +10,26 @@ import (
 
 func TestOutputter(t *testing.T) {
 	assert := assert.New(t)
+
+	// Subgraph1
 	subgraph := &goraff.Graph{}
 	subnode := subgraph.NewNode("subnode", nil)
 	subnode.SetStr("key1", "value1")
 	subgraphReadable := goraff.NewReadableGraph(subgraph)
 
+	//  Subgraph2
+	subgraph2 := &goraff.Graph{}
+	subnode2 := subgraph2.NewNode("subnode2", nil)
+	subnode2.SetStr("key3", "value3")
+	subgraphReadable2 := goraff.NewReadableGraph(subgraph2)
+
+	// Main Graph
 	g := &goraff.Graph{}
+	// Node1 has two subgraaphs
 	n1 := g.NewNode("node1", nil)
 	n1.SetStr("key2", "value2")
-	n1.SetSubGraph(subgraph)
+	n1.AddSubGraph(subgraph)
+	n1.AddSubGraph(subgraph2)
 
 	n2 := g.NewNode("node2", nil)
 	n2.AddStr("key", "value0")
@@ -41,6 +52,10 @@ func TestOutputter(t *testing.T) {
 				ID:      subgraphReadable.ID(),
 				NodeIDs: []string{subnode.Get().ID()},
 			},
+			{
+				ID:      subgraphReadable2.ID(),
+				NodeIDs: []string{subnode2.Get().ID()},
+			},
 		},
 		Nodes: []outputs.NodeOutput{
 			{
@@ -49,7 +64,7 @@ func TestOutputter(t *testing.T) {
 				Vals: []outputs.NodeOutputVal{
 					{Name: "key2", Value: "value2"},
 				},
-				SubGraphID: subgraphReadable.ID(),
+				SubGraphIDs: []string{subgraphReadable.ID(), subgraphReadable2.ID()},
 			},
 			{
 				ID:   subnode.Get().ID(),
@@ -57,7 +72,15 @@ func TestOutputter(t *testing.T) {
 				Vals: []outputs.NodeOutputVal{
 					{Name: "key1", Value: "value1"},
 				},
-				SubGraphID: "",
+				SubGraphIDs: []string{},
+			},
+			{
+				ID:   subnode2.Get().ID(),
+				Name: subnode2.Get().Name(),
+				Vals: []outputs.NodeOutputVal{
+					{Name: "key3", Value: "value3"},
+				},
+				SubGraphIDs: []string{},
 			},
 			{
 				ID:   n2.Get().ID(),
@@ -67,7 +90,7 @@ func TestOutputter(t *testing.T) {
 					{Name: "key_1", Value: "value1"},
 					{Name: "key_2", Value: "value2"},
 				},
-				SubGraphID: "",
+				SubGraphIDs: []string{},
 			},
 		},
 	}
