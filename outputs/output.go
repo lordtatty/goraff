@@ -12,7 +12,7 @@ type NodeOutput struct {
 	ID          string          `json:"id"`
 	Name        string          `json:"name"`
 	Vals        []NodeOutputVal `json:"vals"`
-	SubGraphIDs []string        `json:"subgraph_id"`
+	SubGraphIDs []string        `json:"subgraph_ids"`
 }
 
 type NodeOutputVal struct {
