@@ -68,8 +68,8 @@ func (g *Scaff) validate() error {
 	return nil
 }
 
-type nextBlock struct {
-	Block        *Block
+type nextJoin struct {
+	Join         *Join
 	triggeringNS *Node
 }
 
@@ -78,11 +78,11 @@ func (g *Scaff) flowMgr() error {
 		return fmt.Errorf("entrypoint not set")
 	}
 
-	completedCh := make(chan nextBlock, 10)
+	completedCh := make(chan nextJoin, 10)
 	var wg sync.WaitGroup
 
-	completedCh <- nextBlock{
-		Block:        g.entrypoint,
+	completedCh <- nextJoin{
+		Join:         &Join{From: nil, To: g.entrypoint},
 		triggeringNS: nil,
 	}
 	wg.Add(1) // Increment for the initial node
@@ -92,9 +92,22 @@ func (g *Scaff) flowMgr() error {
 	mut := sync.Mutex{}
 	go func() {
 		for n := range completedCh {
-			go func(n nextBlock) {
-				fmt.Println("completed block", n.Block.Name)
+			go func(n nextJoin) {
 				defer wg.Done() // Ensure we mark this goroutine as done on finish
+				// check Trigger
+				r := NewReadableGraph(g.state)
+				t, err := n.Join.TriggersMet(r)
+				if err != nil {
+					fmt.Printf("error checking join condition: %s\n", err.Error())
+					return
+				}
+				if !t {
+					fmt.Printf("join condition not met To: %s\n", n.Join.To.Name)
+					return
+				}
+				// run block
+				block := n.Join.To
+				fmt.Println("starting block", block.Name)
 				if foundErr != nil {
 					return
 				}
@@ -102,20 +115,21 @@ func (g *Scaff) flowMgr() error {
 				if n.triggeringNS != nil {
 					tr = n.triggeringNS.Get()
 				}
-				nextBlocks, compeltedState, err := g.runBlock(n.Block, tr)
+				completedNode, err := g.runBlock(block, tr)
 				if err != nil {
-					fmt.Printf("error running block %s, letting all active blocks drain: %s \n", n.Block.Name, err.Error())
+					fmt.Printf("error running block %s, letting all active blocks drain: %s \n", block.Name, err.Error())
 					mut.Lock()
 					foundErr = fmt.Errorf("error running block: %w", err)
 					mut.Unlock()
 					return
 				}
-				for _, next := range nextBlocks {
-					fmt.Println("adding block", next.Name)
+				joins := g.Joins().Get(block.Name)
+				for _, j := range joins {
+					fmt.Println("queueing block join", j.To.Name)
 					wg.Add(1) // Increment for each new block
-					completedCh <- nextBlock{
-						Block:        next,
-						triggeringNS: compeltedState,
+					completedCh <- nextJoin{
+						triggeringNS: completedNode,
+						Join:         j,
 					}
 				}
 			}(n)
@@ -127,25 +141,13 @@ func (g *Scaff) flowMgr() error {
 	return foundErr
 }
 
-func (g *Scaff) runBlock(n *Block, triggeringNS *ReadableNode) ([]*Block, *Node, error) {
+func (g *Scaff) runBlock(n *Block, triggeringNS *ReadableNode) (*Node, error) {
 	s := g.state.NewNode(n.Name, nil)
 	r := NewReadableGraph(g.state)
 	err := n.Action.Do(s, r, triggeringNS)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
-	nextBlocks := []*Block{}
 	s.MarkDone()
-	if joins, ok := g.Joins().Get(n.Name); ok {
-		for _, e := range joins {
-			t, err := e.TriggersMet(r)
-			if err != nil {
-				return nil, nil, fmt.Errorf("error checking join condition: %w", err)
-			}
-			if t {
-				nextBlocks = append(nextBlocks, e.To)
-			}
-		}
-	}
-	return nextBlocks, s, nil
+	return s, nil
 }

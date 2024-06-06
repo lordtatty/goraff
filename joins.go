@@ -61,11 +61,11 @@ func (j *Joins) Add(fromName, toName string, condition FollowIf) error {
 	return nil
 }
 
-func (j *Joins) Get(from string) ([]*Join, bool) {
+func (j *Joins) Get(from string) []*Join {
 	if _, ok := j.joins[from]; !ok {
-		return nil, false
+		return nil
 	}
-	return j.joins[from], true
+	return j.joins[from]
 }
 
 // Join connects two blocks in a scaff
@@ -106,18 +106,24 @@ type followIfNodesCompleted struct {
 }
 
 func (e *followIfNodesCompleted) Match(s *ReadableGraph) (bool, error) {
+	fmt.Println("################Checking if nodes are completed")
+
 	for _, nodeID := range e.NodeIDs {
 		st, err := s.FirstNodeByName(nodeID)
+		fmt.Println(nodeID)
 		if err != nil {
 			return false, fmt.Errorf("error getting node state: %w", err)
 		}
+		fmt.Println(st == nil)
 		if st == nil {
 			return false, nil
 		}
+		fmt.Println(st.Done())
 		if !st.Done() {
 			return false, nil
 		}
 	}
+	fmt.Println("################Nodes are completed")
 	return true, nil
 }
 
