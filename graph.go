@@ -37,6 +37,7 @@ func (s *Graph) NodeByName(name string) []*Node {
 	return result
 }
 
+// Gets the first node
 func (s *Graph) FirstNodeByName(name string) *Node {
 	for _, ns := range s.nodes {
 		if ns.name == name {
@@ -94,6 +95,14 @@ func (s *ReadableGraph) NodeIDs() []string {
 		ids = append(ids, ns.Get().ID())
 	}
 	return ids
+}
+
+func (s *ReadableGraph) NodeNames() []string {
+	names := []string{}
+	for _, ns := range s.graph.nodes {
+		names = append(names, ns.name)
+	}
+	return names
 }
 
 func (s *ReadableGraph) ID() string {
