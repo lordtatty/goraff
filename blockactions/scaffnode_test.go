@@ -1,10 +1,10 @@
-package nodeactions_test
+package blockactions_test
 
 import (
 	"testing"
 
 	"github.com/lordtatty/goraff"
-	"github.com/lordtatty/goraff/nodeactions"
+	"github.com/lordtatty/goraff/blockactions"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -13,11 +13,11 @@ func TestGraphNode_Do(t *testing.T) {
 
 	// SubScaff
 	subScaff := &goraff.Scaff{}
-	input1 := subScaff.Blocks().Add("input1", &nodeactions.Input{Value: "value1"})
+	input1 := subScaff.Blocks().Add("input1", &blockactions.Input{Value: "value1"})
 	subScaff.SetEntrypoint(input1)
 
 	// The SUT
-	sut := &nodeactions.ScaffNode{
+	sut := &blockactions.ScaffNode{
 		Scaff: subScaff,
 	}
 

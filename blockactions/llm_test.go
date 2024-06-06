@@ -1,12 +1,12 @@
-package nodeactions_test
+package blockactions_test
 
 import (
 	"strings"
 	"testing"
 
 	"github.com/lordtatty/goraff"
+	"github.com/lordtatty/goraff/blockactions"
 	"github.com/lordtatty/goraff/mocks"
-	"github.com/lordtatty/goraff/nodeactions"
 	"github.com/lordtatty/goraff/notifiers"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -42,7 +42,7 @@ func TestLLM_Do(t *testing.T) {
 		})
 
 	// Execute the method under test
-	sut := &nodeactions.LLM{
+	sut := &blockactions.LLM{
 		SystemMsg: expectedSystemMsg,
 		UserMsg:   expectedUserMsg,
 		Client:    mClient,

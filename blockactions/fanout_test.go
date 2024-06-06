@@ -1,10 +1,10 @@
-package nodeactions_test
+package blockactions_test
 
 import (
 	"testing"
 
 	"github.com/lordtatty/goraff"
-	"github.com/lordtatty/goraff/nodeactions"
+	"github.com/lordtatty/goraff/blockactions"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -13,10 +13,10 @@ func TestFanOut_Do(t *testing.T) {
 
 	// Scaff
 	scaff := &goraff.Scaff{}
-	scaff.Blocks().Add("input1", &nodeactions.Input{Value: "value1"})
+	scaff.Blocks().Add("input1", &blockactions.Input{Value: "value1"})
 
 	// SUT
-	sut := nodeactions.FanOut{
+	sut := blockactions.FanOut{
 		Scaff: scaff,
 	}
 

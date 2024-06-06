@@ -1,16 +1,16 @@
-package nodeactions_test
+package blockactions_test
 
 import (
 	"testing"
 
 	"github.com/lordtatty/goraff"
-	"github.com/lordtatty/goraff/nodeactions"
+	"github.com/lordtatty/goraff/blockactions"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestPrint_Do(t *testing.T) {
 	assert := assert.New(t)
-	sut := nodeactions.Print{}
+	sut := blockactions.Print{}
 	s := &goraff.Node{}
 	r := &goraff.ReadableGraph{}
 	err := sut.Do(s, r, nil)
@@ -19,7 +19,7 @@ func TestPrint_Do(t *testing.T) {
 
 func TestPrint_DoWithTriggeringNode(t *testing.T) {
 	assert := assert.New(t)
-	sut := nodeactions.Print{}
+	sut := blockactions.Print{}
 	s := &goraff.Node{}
 	r := &goraff.ReadableGraph{}
 	tn := &goraff.Node{}

@@ -1,4 +1,4 @@
-package nodeactions
+package blockactions
 
 import (
 	"log"
