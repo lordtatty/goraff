@@ -96,22 +96,24 @@ func (g *Scaff) flowMgr() error {
 			if n.previousNode != nil {
 				n.previousNode.MarkDone()
 			}
-			if n.Join != nil {
-				fmt.Println("considering block", n.Join.To.Name)
-				r := NewReadableGraph(g.state)
-				t, err := n.Join.TriggersMet(r)
-				if err != nil {
-					fmt.Printf("error checking join condition: %s\n", err.Error())
-					wg.Done()
-					continue
-				}
-				if !t {
-					fmt.Printf("join condition not met To: %s\n", n.Join.To.Name)
-					wg.Done()
-					continue
-				}
-				fmt.Printf("join condition met To: %s\n", n.Join.To.Name)
+			if n.Join == nil {
+				wg.Done()
+				continue
 			}
+			fmt.Println("considering block", n.Join.To.Name)
+			r := NewReadableGraph(g.state)
+			t, err := n.Join.TriggersMet(r)
+			if err != nil {
+				fmt.Printf("error checking join condition: %s\n", err.Error())
+				wg.Done()
+				continue
+			}
+			if !t {
+				fmt.Printf("join condition not met To: %s\n", n.Join.To.Name)
+				wg.Done()
+				continue
+			}
+			fmt.Printf("join condition met To: %s\n", n.Join.To.Name)
 			// launch goroutine
 			go func(n nextJoin) {
 				defer wg.Done() // Ensure we mark this goroutine as done on finish
@@ -144,6 +146,7 @@ func (g *Scaff) flowMgr() error {
 					}
 				}
 				if len(joins) == 0 {
+					wg.Add(1) // Increment
 					completedCh <- nextJoin{
 						previousNode: completedNode,
 						Join:         nil,
