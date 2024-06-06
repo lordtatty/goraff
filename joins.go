@@ -106,24 +106,18 @@ type followIfNodesCompleted struct {
 }
 
 func (e *followIfNodesCompleted) Match(s *ReadableGraph) (bool, error) {
-	fmt.Println("################Checking if nodes are completed")
-
 	for _, nodeID := range e.NodeIDs {
 		st, err := s.FirstNodeByName(nodeID)
-		fmt.Println(nodeID)
 		if err != nil {
 			return false, fmt.Errorf("error getting node state: %w", err)
 		}
-		fmt.Println(st == nil)
 		if st == nil {
 			return false, nil
 		}
-		fmt.Println(st.Done())
 		if !st.Done() {
 			return false, nil
 		}
 	}
-	fmt.Println("################Nodes are completed")
 	return true, nil
 }
 

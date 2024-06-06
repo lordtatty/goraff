@@ -70,7 +70,7 @@ func (g *Scaff) validate() error {
 
 type nextJoin struct {
 	Join         *Join
-	triggeringNS *Node
+	previousNode *Node
 }
 
 func (g *Scaff) flowMgr() error {
@@ -83,7 +83,7 @@ func (g *Scaff) flowMgr() error {
 
 	completedCh <- nextJoin{
 		Join:         &Join{From: nil, To: g.entrypoint},
-		triggeringNS: nil,
+		previousNode: nil,
 	}
 	wg.Add(1) // Increment for the initial node
 
@@ -92,28 +92,39 @@ func (g *Scaff) flowMgr() error {
 	mut := sync.Mutex{}
 	go func() {
 		for n := range completedCh {
-			go func(n nextJoin) {
-				defer wg.Done() // Ensure we mark this goroutine as done on finish
-				// check Trigger
+			// check Trigger before launching goroutine to prevent join race conditions
+			if n.previousNode != nil {
+				n.previousNode.MarkDone()
+			}
+			if n.Join != nil {
+				fmt.Println("considering block", n.Join.To.Name)
 				r := NewReadableGraph(g.state)
 				t, err := n.Join.TriggersMet(r)
 				if err != nil {
 					fmt.Printf("error checking join condition: %s\n", err.Error())
-					return
+					wg.Done()
+					continue
 				}
 				if !t {
 					fmt.Printf("join condition not met To: %s\n", n.Join.To.Name)
-					return
+					wg.Done()
+					continue
 				}
+				fmt.Printf("join condition met To: %s\n", n.Join.To.Name)
+			}
+			// launch goroutine
+			go func(n nextJoin) {
+				defer wg.Done() // Ensure we mark this goroutine as done on finish
 				// run block
 				block := n.Join.To
+				defer fmt.Printf("finished block %s\n", n.Join.To.Name)
 				fmt.Println("starting block", block.Name)
 				if foundErr != nil {
 					return
 				}
 				var tr *ReadableNode = nil
-				if n.triggeringNS != nil {
-					tr = n.triggeringNS.Get()
+				if n.previousNode != nil {
+					tr = n.previousNode.Get()
 				}
 				completedNode, err := g.runBlock(block, tr)
 				if err != nil {
@@ -128,8 +139,14 @@ func (g *Scaff) flowMgr() error {
 					fmt.Println("queueing block join", j.To.Name)
 					wg.Add(1) // Increment for each new block
 					completedCh <- nextJoin{
-						triggeringNS: completedNode,
+						previousNode: completedNode,
 						Join:         j,
+					}
+				}
+				if len(joins) == 0 {
+					completedCh <- nextJoin{
+						previousNode: completedNode,
+						Join:         nil,
 					}
 				}
 			}(n)
@@ -148,6 +165,6 @@ func (g *Scaff) runBlock(n *Block, triggeringNS *ReadableNode) (*Node, error) {
 	if err != nil {
 		return nil, err
 	}
-	s.MarkDone()
+	// s.MarkDone()
 	return s, nil
 }
