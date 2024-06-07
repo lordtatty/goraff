@@ -15,37 +15,54 @@ type FanOut struct {
 
 func (f *FanOut) Do(s *goraff.Node, r *goraff.ReadableGraph, previousNode *goraff.ReadableNode) error {
 	fmt.Println("Running Scaff Node")
+
 	outputs := previousNode.AllStr("result")
 	if f.OutKey == "" {
 		f.OutKey = "result"
 	}
+
 	errCh := make(chan error, len(outputs))
 	wg := sync.WaitGroup{}
 	wg.Add(len(outputs))
+
 	for _, output := range outputs {
-		graph := &goraff.Graph{}
-		graph.NewNode(f.InKey, nil).AddStr("result", output)
+		graph := f.createSubGraph(output)
 		s.AddSubGraph(graph)
-		go func(g *goraff.Graph) {
-			defer wg.Done()
-			err := f.runScaff(g)
-			if err != nil {
-				errCh <- fmt.Errorf("error running graph: %s", err.Error())
-				return
-			}
-		}(graph)
+		go f.runSubGraph(graph, &wg, errCh)
 	}
+
 	wg.Wait()
 	close(errCh)
-	// check for errors
-	errs := []error{}
+
+	if errs := f.collectErrors(errCh); len(errs) > 0 {
+		return fmt.Errorf("errors running graph: %v", errs)
+	}
+
+	return f.buildFinalNodeResult(s)
+}
+
+func (f *FanOut) createSubGraph(output string) *goraff.Graph {
+	graph := &goraff.Graph{}
+	graph.NewNode(f.InKey, nil).AddStr("result", output)
+	return graph
+}
+
+func (f *FanOut) runSubGraph(graph *goraff.Graph, wg *sync.WaitGroup, errCh chan<- error) {
+	defer wg.Done()
+	if err := f.runScaff(graph); err != nil {
+		errCh <- fmt.Errorf("error running graph: %s", err.Error())
+	}
+}
+
+func (f *FanOut) collectErrors(errCh <-chan error) []error {
+	var errs []error
 	for err := range errCh {
 		errs = append(errs, err)
 	}
-	if len(errs) > 0 {
-		return fmt.Errorf("errors running graph: %v", errs)
-	}
-	// Build final node result
+	return errs
+}
+
+func (f *FanOut) buildFinalNodeResult(s *goraff.Node) error {
 	for _, r := range s.Get().SubGraph() {
 		resultNode, err := r.FirstNodeByName(f.OutKey)
 		if err != nil {
@@ -59,15 +76,13 @@ func (f *FanOut) Do(s *goraff.Node, r *goraff.ReadableGraph, previousNode *goraf
 }
 
 func (f *FanOut) runScaff(g *goraff.Graph) error {
-	err := f.Scaff.Go(g)
-	if err != nil {
+	if err := f.Scaff.Go(g); err != nil {
 		return fmt.Errorf("error running subgraph: %s", err.Error())
 	}
 	r := goraff.NewReadableGraph(g)
 	nodeNames := r.NodeNames()
 	fmt.Println(r.ID()+"  - Node Names: ", nodeNames)
-	outNode := g.FirstNodeByName(f.OutKey)
-	if outNode == nil {
+	if g.FirstNodeByName(f.OutKey) == nil {
 		return fmt.Errorf("could not find out node for node name: %s", f.OutKey)
 	}
 	return nil
