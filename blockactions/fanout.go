@@ -14,7 +14,7 @@ type FanOut struct {
 }
 
 // Do runs the FanOut process on the given node, graph, and previous node.
-func (f *FanOut) Do(s *goraff.Node, r *goraff.ReadableGraph, prevNode *goraff.ReadableNode) error {
+func (f *FanOut) Do(n *goraff.Node, r *goraff.ReadableGraph, prevNode *goraff.ReadableNode) error {
 	fmt.Println("Running Scaff Node")
 
 	results := prevNode.AllStr("result")
@@ -28,7 +28,7 @@ func (f *FanOut) Do(s *goraff.Node, r *goraff.ReadableGraph, prevNode *goraff.Re
 
 	for _, result := range results {
 		subGraph := f.newSubGraph(result)
-		s.AddSubGraph(subGraph)
+		n.AddSubGraph(subGraph)
 		go f.processSubGraph(subGraph, &wg, errCh)
 	}
 
@@ -39,7 +39,7 @@ func (f *FanOut) Do(s *goraff.Node, r *goraff.ReadableGraph, prevNode *goraff.Re
 		return fmt.Errorf("errors running graph: %v", errs)
 	}
 
-	return f.combineResults(s)
+	return f.combineResults(n)
 }
 
 // newSubGraph initializes a new graph for the given result.
@@ -67,14 +67,14 @@ func (f *FanOut) collectErrors(errCh <-chan error) []error {
 }
 
 // combineResults combines the results from all sub-graphs into the main node.
-func (f *FanOut) combineResults(s *goraff.Node) error {
-	for _, subGraph := range s.Get().SubGraph() {
+func (f *FanOut) combineResults(n *goraff.Node) error {
+	for _, subGraph := range n.Get().SubGraph() {
 		outNode, err := subGraph.FirstNodeByName(f.OutKey)
 		if err != nil {
 			return fmt.Errorf("could not find out node with name: %s", f.OutKey)
 		}
 		for _, result := range outNode.AllStr("result") {
-			s.AddStr("result", result)
+			n.AddStr("result", result)
 		}
 	}
 	return nil
