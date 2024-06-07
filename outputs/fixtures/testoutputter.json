@@ -1,0 +1,81 @@
+{
+    "primary_state_id": "<<PRIMARY_GRAPH_ID>>",
+    "states": [
+        {
+            "id": "<<PRIMARY_GRAPH_ID>>",
+            "node_ids": [
+                "<<NODE1_ID>>",
+                "<<NODE2_ID>>"
+            ]
+        },
+        {
+            "id": "<<GRAPH2_ID>>",
+            "node_ids": [
+                "<<SUBNODE_ID>>"
+            ]
+        },
+        {
+            "id": "<<GRAPH3_ID>>",
+            "node_ids": [
+                "<<SUBNODE2_ID>>"
+            ]
+        }
+    ],
+    "nodes": [
+        {
+            "id": "<<NODE1_ID>>",
+            "name": "node1",
+            "vals": [
+                {
+                    "name": "key2",
+                    "value": "value2"
+                }
+            ],
+            "subgraph_ids": [
+                "<<GRAPH2_ID>>",
+                "<<GRAPH3_ID>>"
+            ]
+        },
+        {
+            "id": "<<SUBNODE_ID>>",
+            "name": "subnode",
+            "vals": [
+                {
+                    "name": "key1",
+                    "value": "value1"
+                }
+            ],
+            "subgraph_ids": []
+        },
+        {
+            "id": "<<SUBNODE2_ID>>",
+            "name": "subnode2",
+            "vals": [
+                {
+                    "name": "key3",
+                    "value": "value3"
+                }
+            ],
+            "subgraph_ids": []
+        },
+        {
+            "id": "<<NODE2_ID>>",
+            "name": "node2",
+            "vals": [
+                {
+                    "name": "key_0",
+                    "value": "value0"
+                },
+                {
+                    "name": "key_1",
+                    "value": "value1"
+                },
+                {
+                    "name": "key_2",
+                    "value": "value2"
+                }
+            ],
+            "subgraph_ids": []
+        }
+    ]
+}

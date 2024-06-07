@@ -1,12 +1,31 @@
 package outputs_test
 
 import (
+	"encoding/json"
+	"fmt"
+	"os"
+	"strings"
 	"testing"
 
 	"github.com/lordtatty/goraff"
 	"github.com/lordtatty/goraff/outputs"
 	"github.com/stretchr/testify/assert"
 )
+
+func loadFixtureStr(filename string, replacements map[string]string) string {
+	baseDir := "./fixtures"
+	filePath := fmt.Sprintf("%s/%s", baseDir, filename)
+	b, err := os.ReadFile(filePath)
+	if err != nil {
+		panic(err)
+	}
+	resultStr := string(b)
+	for k, v := range replacements {
+		key := fmt.Sprintf("<<%s>>", k)
+		resultStr = strings.ReplaceAll(resultStr, key, v)
+	}
+	return resultStr
+}
 
 func TestOutputter(t *testing.T) {
 	assert := assert.New(t)
@@ -15,13 +34,13 @@ func TestOutputter(t *testing.T) {
 	subgraph := &goraff.Graph{}
 	subnode := subgraph.NewNode("subnode", nil)
 	subnode.SetStr("key1", "value1")
-	subgraphReadable := goraff.NewReadableGraph(subgraph)
+	// subgraphReadable := goraff.NewReadableGraph(subgraph)
 
 	//  Subgraph2
 	subgraph2 := &goraff.Graph{}
 	subnode2 := subgraph2.NewNode("subnode2", nil)
 	subnode2.SetStr("key3", "value3")
-	subgraphReadable2 := goraff.NewReadableGraph(subgraph2)
+	// subgraphReadable2 := goraff.NewReadableGraph(subgraph2)
 
 	// Main Graph
 	g := &goraff.Graph{}
@@ -41,58 +60,25 @@ func TestOutputter(t *testing.T) {
 	sut := &outputs.Outputter{}
 	result := sut.Output(r)
 
-	want := &outputs.Output{
-		PrimaryStateID: r.ID(),
-		States: []outputs.GraphOutput{
-			{
-				ID:      r.ID(),
-				NodeIDs: []string{n1.Get().ID(), n2.Get().ID()},
-			},
-			{
-				ID:      subgraphReadable.ID(),
-				NodeIDs: []string{subnode.Get().ID()},
-			},
-			{
-				ID:      subgraphReadable2.ID(),
-				NodeIDs: []string{subnode2.Get().ID()},
-			},
-		},
-		Nodes: []outputs.NodeOutput{
-			{
-				ID:   n1.Get().ID(),
-				Name: n1.Get().Name(),
-				Vals: []outputs.NodeOutputVal{
-					{Name: "key2", Value: "value2"},
-				},
-				SubGraphIDs: []string{subgraphReadable.ID(), subgraphReadable2.ID()},
-			},
-			{
-				ID:   subnode.Get().ID(),
-				Name: subnode.Get().Name(),
-				Vals: []outputs.NodeOutputVal{
-					{Name: "key1", Value: "value1"},
-				},
-				SubGraphIDs: []string{},
-			},
-			{
-				ID:   subnode2.Get().ID(),
-				Name: subnode2.Get().Name(),
-				Vals: []outputs.NodeOutputVal{
-					{Name: "key3", Value: "value3"},
-				},
-				SubGraphIDs: []string{},
-			},
-			{
-				ID:   n2.Get().ID(),
-				Name: n2.Get().Name(),
-				Vals: []outputs.NodeOutputVal{
-					{Name: "key_0", Value: "value0"},
-					{Name: "key_1", Value: "value1"},
-					{Name: "key_2", Value: "value2"},
-				},
-				SubGraphIDs: []string{},
-			},
-		},
-	}
-	assert.Equal(want, result)
+	// Load expected output
+	// We need to replace the placehodler IDs with the actual IDs
+	r1 := goraff.NewReadableGraph(g)
+	r2 := goraff.NewReadableGraph(subgraph)
+	r3 := goraff.NewReadableGraph(subgraph2)
+	want := loadFixtureStr("testoutputter.json", map[string]string{
+		"PRIMARY_GRAPH_ID": r1.ID(),
+		"GRAPH2_ID":        r2.ID(),
+		"GRAPH3_ID":        r3.ID(),
+		"NODE1_ID":         n1.Get().ID(),
+		"NODE2_ID":         n2.Get().ID(),
+		"SUBNODE_ID":       subnode.Get().ID(),
+		"SUBNODE2_ID":      subnode2.Get().ID(),
+	})
+
+	// result to json string
+	b, err := json.Marshal(result)
+	assert.Nil(err)
+	resultStr := string(b)
+
+	assert.JSONEq(want, resultStr)
 }
