@@ -53,11 +53,11 @@ func TestNode_State(t *testing.T) {
 	n.Set("key1", []byte("value1"))
 	n.Set("key2", []byte("value2"))
 
-	state := n.Get().State()
-	assert.Equal(2, len(state))
+	keys := n.Get().Keys()
+	assert.Equal(2, len(keys))
 
-	assert.Equal([][]byte{[]byte("value1")}, state["key1"])
-	assert.Equal([][]byte{[]byte("value2")}, state["key2"])
+	assert.Equal([][]byte{[]byte("value1")}, n.Get().All("key1"))
+	assert.Equal([][]byte{[]byte("value2")}, n.Get().All("key2"))
 }
 
 func TestNode_SetGet(t *testing.T) {
@@ -144,10 +144,10 @@ func TestNode_ConcurrentSet(t *testing.T) {
 
 	wg.Wait()
 
-	state := n.Get().State()
-	assert.Equal(100, len(state))
-	for i := 0; i < 100; i++ {
-		result := n.Get().First(key + strconv.Itoa(i))
+	keys := n.Get().Keys()
+	assert.Len(keys, 100)
+	for _, k := range keys {
+		result := n.Get().First(k)
 		assert.Equal(value, result)
 	}
 }
@@ -174,10 +174,10 @@ func TestNode_ConcurrentReadWrite(t *testing.T) {
 
 	wg.Wait()
 
-	state := n.Get().State()
-	assert.Equal(100, len(state))
-	for i := 0; i < 100; i++ {
-		result := n.Get().First(key + strconv.Itoa(i))
+	keys := n.Get().Keys()
+	assert.Len(keys, 100)
+	for _, k := range keys {
+		result := n.Get().First(k)
 		assert.Equal(value, result)
 	}
 }
@@ -223,10 +223,10 @@ func TestNode_Add(t *testing.T) {
 	n.Add(key, value2)
 	n.Add(key, value3)
 
-	state := n.Get().State()
-	assert.Equal(3, len(state[key]))
+	result := n.Get().All(key)
+	assert.Len(result, 3)
 
-	assert.Equal([][]byte{value1, value2, value3}, state[key])
+	assert.Equal([][]byte{value1, value2, value3}, n.Get().All(key))
 
 	all := n.Get().All(key)
 	assert.Equal(3, len(all))
@@ -247,10 +247,10 @@ func TestNode_AddStr(t *testing.T) {
 	n.AddStr(key, value2)
 	n.AddStr(key, value3)
 
-	state := n.Get().State()
-	assert.Equal(3, len(state[key]))
+	result := n.Get().All(key)
+	assert.Len(result, 3)
 
-	assert.Equal([][]byte{[]byte(value1), []byte(value2), []byte(value3)}, state[key])
+	assert.Equal([][]byte{[]byte(value1), []byte(value2), []byte(value3)}, n.Get().All(key))
 
 	all := n.Get().AllStr(key)
 	assert.Equal(3, len(all))

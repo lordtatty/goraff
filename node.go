@@ -46,6 +46,12 @@ func (n *Node) AddStr(key, value string) {
 	n.Add(key, []byte(value))
 }
 
+func (n *Node) AddStrs(key string, value []string) {
+	for _, v := range value {
+		n.AddStr(key, v)
+	}
+}
+
 func (n *Node) Set(key string, value []byte) {
 	n.mut.Lock()
 	if n.state == nil {
@@ -71,18 +77,12 @@ type ReadableNode struct {
 	node *Node
 }
 
-func (n *ReadableNode) State() map[string][][]byte {
-	n.node.mut.Lock()
-	defer n.node.mut.Unlock()
-	if n.node == nil {
-		return map[string][][]byte{}
+func (n *ReadableNode) Keys() []string {
+	keys := []string{}
+	for k := range n.node.state {
+		keys = append(keys, k)
 	}
-	// Copy the state
-	state := make(map[string][][]byte)
-	for k, v := range n.node.state {
-		state[k] = v
-	}
-	return state
+	return keys
 }
 
 func (n *ReadableNode) SubGraph() []*ReadableGraph {
