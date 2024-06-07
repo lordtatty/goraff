@@ -34,13 +34,11 @@ func TestOutputter(t *testing.T) {
 	subgraph := &goraff.Graph{}
 	subnode := subgraph.NewNode("subnode", nil)
 	subnode.SetStr("key1", "value1")
-	// subgraphReadable := goraff.NewReadableGraph(subgraph)
 
 	//  Subgraph2
 	subgraph2 := &goraff.Graph{}
 	subnode2 := subgraph2.NewNode("subnode2", nil)
 	subnode2.SetStr("key3", "value3")
-	// subgraphReadable2 := goraff.NewReadableGraph(subgraph2)
 
 	// Main Graph
 	g := &goraff.Graph{}

@@ -28,7 +28,9 @@
             "vals": [
                 {
                     "name": "key2",
-                    "value": "value2"
+                    "values": [
+                        "value2"
+                    ]
                 }
             ],
             "subgraph_ids": [
@@ -42,7 +44,9 @@
             "vals": [
                 {
                     "name": "key1",
-                    "value": "value1"
+                    "values": [
+                        "value1"
+                    ]
                 }
             ],
             "subgraph_ids": []
@@ -53,7 +57,9 @@
             "vals": [
                 {
                     "name": "key3",
-                    "value": "value3"
+                    "values": [
+                        "value3"
+                    ]
                 }
             ],
             "subgraph_ids": []
@@ -63,16 +69,12 @@
             "name": "node2",
             "vals": [
                 {
-                    "name": "key_0",
-                    "value": "value0"
-                },
-                {
-                    "name": "key_1",
-                    "value": "value1"
-                },
-                {
-                    "name": "key_2",
-                    "value": "value2"
+                    "name": "key",
+                    "values": [
+                        "value0",
+                        "value1",
+                        "value2"
+                    ]
                 }
             ],
             "subgraph_ids": []

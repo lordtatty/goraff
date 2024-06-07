@@ -16,8 +16,8 @@ type NodeOutput struct {
 }
 
 type NodeOutputVal struct {
-	Name  string `json:"name"`
-	Value string `json:"value"`
+	Name   string   `json:"name"`
+	Values []string `json:"values"`
 }
 
 type Output struct {
@@ -119,14 +119,11 @@ func (o *Outputter) allNodes(s *goraff.ReadableGraph) ([]NodeOutput, error) {
 
 func (o *Outputter) node(ns *goraff.ReadableNode) *NodeOutput {
 	vals := []NodeOutputVal{}
-	for k, arr := range ns.State() {
-		for i, v := range arr {
-			key := k
-			if len(arr) > 1 {
-				key = fmt.Sprintf("%s_%d", k, i)
-			}
-			vals = append(vals, NodeOutputVal{Name: key, Value: string(v)})
-		}
+	for _, key := range ns.Keys() {
+		vals = append(vals, NodeOutputVal{
+			Name:   key,
+			Values: ns.AllStr(key),
+		})
 	}
 	subIDs := []string{}
 	for _, ns := range ns.SubGraph() {
