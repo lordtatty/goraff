@@ -9,7 +9,6 @@ import (
 // When it runs, it will create a graph of data
 type Scaff struct {
 	entrypoint *Block
-	state      *Graph
 	joins      *Joins
 	blocks     *Blocks
 }
@@ -47,8 +46,7 @@ func (g *Scaff) Go(graph *Graph) error {
 	if err != nil {
 		return fmt.Errorf("error validating graph: %w", err)
 	}
-	g.state = graph
-	return g.flowMgr()
+	return g.flowMgr(graph)
 }
 
 func (g *Scaff) validate() error {
@@ -73,7 +71,7 @@ type nextJoin struct {
 	previousNode *Node
 }
 
-func (g *Scaff) flowMgr() error {
+func (g *Scaff) flowMgr(graph *Graph) error {
 	if g.entrypoint == nil {
 		return fmt.Errorf("entrypoint not set")
 	}
@@ -101,7 +99,7 @@ func (g *Scaff) flowMgr() error {
 				continue
 			}
 			fmt.Println("considering block", n.Join.To.Name)
-			r := NewReadableGraph(g.state)
+			r := NewReadableGraph(graph)
 			t, err := n.Join.TriggersMet(r)
 			if err != nil {
 				fmt.Printf("error checking join condition: %s\n", err.Error())
@@ -128,7 +126,7 @@ func (g *Scaff) flowMgr() error {
 				if n.previousNode != nil {
 					tr = n.previousNode.Get()
 				}
-				completedNode, err := g.runBlock(block, tr)
+				completedNode, err := g.runBlock(graph, block, tr)
 				if err != nil {
 					fmt.Printf("error running block %s, letting all active blocks drain: %s \n", block.Name, err.Error())
 					mut.Lock()
@@ -161,13 +159,13 @@ func (g *Scaff) flowMgr() error {
 	return foundErr
 }
 
-func (g *Scaff) runBlock(n *Block, triggeringNS *ReadableNode) (*Node, error) {
-	s := g.state.NewNode(n.Name, nil)
-	r := NewReadableGraph(g.state)
-	err := n.Action.Do(s, r, triggeringNS)
+func (s *Scaff) runBlock(g *Graph, b *Block, triggeringNS *ReadableNode) (*Node, error) {
+	n := g.NewNode(b.Name, nil)
+	r := NewReadableGraph(g)
+	err := b.Action.Do(n, r, triggeringNS)
 	if err != nil {
 		return nil, err
 	}
 	// s.MarkDone()
-	return s, nil
+	return n, nil
 }

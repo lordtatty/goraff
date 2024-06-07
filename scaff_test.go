@@ -3,9 +3,11 @@ package goraff_test
 import (
 	"fmt"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/lordtatty/goraff"
 	"github.com/stretchr/testify/assert"
 )
@@ -321,4 +323,63 @@ func TestScaff_Go_ValidateUniqueBlockNames(t *testing.T) {
 	err := g.Go(graph)
 	assert.Error(err)
 	assert.Equal("error validating graph: error validating blocks: block name not unique: action1", err.Error())
+}
+
+// This test is to ensure that the scaff can be reused
+// with multiple graphs, eg. Does not hold on to any
+// state from Go() calls
+func TestScaff_Go_IsReusable(t *testing.T) {
+	assert := assert.New(t)
+
+	// Build Scaff
+	g := &goraff.Scaff{}
+	action1 := &actionMock{name: "action1"}
+	node1 := g.Blocks().Add("action1", action1)
+	action2 := &actionMock{name: "action2", lastName: "action1"}
+	node2 := g.Blocks().Add("action2", action2)
+	g.SetEntrypoint(node1)
+	g.Joins().Add(node1, node2, nil)
+
+	// Run three times sequentially
+	for i := 0; i < 3; i++ {
+		graph := &goraff.Graph{}
+		// let's store an ID to make sure we have the same graph at the end
+		id := uuid.New().String()
+		idNode := graph.NewNode("identier", nil)
+		idNode.SetStr("id", id)
+		err := g.Go(graph)
+		assert.NoError(err)
+		assert.Equal(id, graph.FirstNodeByName("identier").Get().FirstStr("id"))
+		assert.Equal("action1", graph.FirstNodeByName(node1).Get().FirstStr("action1_key"))
+		assert.Equal("action1 :: action2", graph.FirstNodeByName(node2).Get().FirstStr("action2_key"))
+	}
+
+	wg := sync.WaitGroup{}
+	respCh := make(chan error, 100)
+	// Run in parallel
+	for i := 0; i < 100; i++ {
+		wg.Add(1)
+		go func(i int) {
+			defer wg.Done()
+			graph := &goraff.Graph{}
+			// let's store an ID to make sure we have the same graph at the end
+			id := uuid.New().String()
+			idNode := graph.NewNode("identier", nil)
+			idNode.SetStr("id", id)
+			err := g.Go(graph)
+			assert.NoError(err)
+			assert.Equal(id, graph.FirstNodeByName("identier").Get().FirstStr("id"))
+			assert.Equal("action1", graph.FirstNodeByName(node1).Get().FirstStr("action1_key"))
+			assert.Equal("action1 :: action2", graph.FirstNodeByName(node2).Get().FirstStr("action2_key"))
+			respCh <- nil
+		}(i)
+	}
+	wg.Wait()
+	close(respCh)
+	responses := []error{}
+	for resp := range respCh {
+		assert.NoError(resp)
+		responses = append(responses, resp)
+	}
+	assert.Len(responses, 100)
 }
