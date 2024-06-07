@@ -47,6 +47,18 @@ func TestNode_SetSubGraph(t *testing.T) {
 	assert.Equal(r.ID(), sg.ID())
 }
 
+func TestNode_Keys(t *testing.T) {
+	assert := assert.New(t)
+	n := &goraff.Node{}
+	n.Set("key1", []byte("value1"))
+	n.Set("key", []byte("value2"))
+
+	keys := n.Get().Keys()
+	assert.Equal(2, len(keys))
+	assert.Contains(keys, "key1")
+	assert.Contains(keys, "key")
+}
+
 func TestNode_State(t *testing.T) {
 	assert := assert.New(t)
 	n := &goraff.Node{}
