@@ -81,7 +81,7 @@ func TestFanOut_Do(t *testing.T) {
 	assert.Equal("value2", subInNode2.FirstStr("result"))
 	assert.Equal("value3", subInNode3.FirstStr("result"))
 
-	// Assert the inputs have been correctly reversed
+	// Assert the inputs have been correctly reversed within each subgraph
 	subRevNode1, _ := subGraphs[0].FirstNodeByName("result")
 	subRevNode2, _ := subGraphs[1].FirstNodeByName("result")
 	subRevNode3, _ := subGraphs[2].FirstNodeByName("result")
@@ -89,7 +89,7 @@ func TestFanOut_Do(t *testing.T) {
 	assert.Equal("2eulav", subRevNode2.FirstStr("result"))
 	assert.Equal("3eulav", subRevNode3.FirstStr("result"))
 
-	// Assert final node result
+	// Assert final output node result
 	assert.Len(sutNode.Get().All("result"), 3)
 	assert.Equal("1eulav", sutNode.Get().FirstStr("result"))
 	assert.Equal("2eulav", sutNode.Get().AllStr("result")[1])
