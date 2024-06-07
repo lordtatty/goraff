@@ -8,18 +8,29 @@ import (
 )
 
 type FanOut struct {
-	Scaff  *goraff.Scaff
-	InKey  string
-	OutKey string
+	Scaff   *goraff.Scaff
+	InNode  string
+	InKey   string
+	OutNode string
+	OutKey  string
 }
 
 // Do runs the FanOut process on the given node, graph, and previous node.
 func (f *FanOut) Do(n *goraff.Node, r *goraff.ReadableGraph, prevNode *goraff.ReadableNode) error {
 	fmt.Println("Running Scaff Node")
-
-	results := prevNode.AllStr("result")
+	if f.InKey == "" {
+		f.InKey = "result"
+	}
+	if f.OutNode == "" {
+		f.OutNode = "result"
+	}
 	if f.OutKey == "" {
 		f.OutKey = "result"
+	}
+
+	results, err := f.getInputs(r, prevNode)
+	if err != nil {
+		return fmt.Errorf("error getting inputs: %s", err.Error())
 	}
 
 	errCh := make(chan error, len(results))
@@ -42,10 +53,24 @@ func (f *FanOut) Do(n *goraff.Node, r *goraff.ReadableGraph, prevNode *goraff.Re
 	return f.combineResults(n)
 }
 
+func (f *FanOut) getInputs(r *goraff.ReadableGraph, prevNode *goraff.ReadableNode) ([][]byte, error) {
+	if f.InNode != "" {
+		n, err := r.FirstNodeByName(f.InNode)
+		if err != nil {
+			return nil, fmt.Errorf("could not find in node with name: %s", f.InNode)
+		}
+		return n.All(f.InKey), nil
+	}
+	if prevNode == nil {
+		return nil, fmt.Errorf("no previous node provided, and no InNode specified")
+	}
+	return prevNode.All(f.InKey), nil
+}
+
 // newSubGraph initializes a new graph for the given result.
-func (f *FanOut) newSubGraph(result string) *goraff.Graph {
+func (f *FanOut) newSubGraph(result []byte) *goraff.Graph {
 	graph := &goraff.Graph{}
-	graph.NewNode(f.InKey, nil).AddStr("result", result)
+	graph.NewNode(f.InNode, nil).Add(f.InKey, result)
 	return graph
 }
 
@@ -69,11 +94,11 @@ func (f *FanOut) collectErrors(errCh <-chan error) []error {
 // combineResults combines the results from all sub-graphs into the main node.
 func (f *FanOut) combineResults(n *goraff.Node) error {
 	for _, subGraph := range n.Get().SubGraph() {
-		outNode, err := subGraph.FirstNodeByName(f.OutKey)
+		outNode, err := subGraph.FirstNodeByName(f.OutNode)
 		if err != nil {
-			return fmt.Errorf("could not find out node with name: %s", f.OutKey)
+			return fmt.Errorf("could not find out node with name: %s", f.OutNode)
 		}
-		for _, result := range outNode.AllStr("result") {
+		for _, result := range outNode.AllStr(f.OutKey) {
 			n.AddStr("result", result)
 		}
 	}
@@ -88,8 +113,8 @@ func (f *FanOut) runScaff(g *goraff.Graph) error {
 	r := goraff.NewReadableGraph(g)
 	nodeNames := r.NodeNames()
 	fmt.Println(r.ID()+"  - Node Names: ", nodeNames)
-	if g.FirstNodeByName(f.OutKey) == nil {
-		return fmt.Errorf("could not find out node with name: %s", f.OutKey)
+	if g.FirstNodeByName(f.OutNode) == nil {
+		return fmt.Errorf("could not find out node with name: %s", f.OutNode)
 	}
 	return nil
 }

@@ -26,17 +26,19 @@ func reverseStr(s string) string {
 
 type MockActionReverse struct {
 	InNode string
+	InKey  string
+	OutKey string
 }
 
-func (m *MockActionReverse) Do(s *goraff.Node, r *goraff.ReadableGraph, previousNode *goraff.ReadableNode) error {
+func (m *MockActionReverse) Do(n *goraff.Node, r *goraff.ReadableGraph, previousNode *goraff.ReadableNode) error {
 	inNode, err := r.FirstNodeByName(m.InNode)
 	if err != nil {
 		return fmt.Errorf("Could not find node %s", m.InNode)
 	}
-	outputs := inNode.AllStr("result")
+	outputs := inNode.AllStr(m.InKey)
 	for _, output := range outputs {
 		reversed := reverseStr(output)
-		s.AddStr("result", reversed)
+		n.AddStr(m.OutKey, reversed)
 	}
 	return nil
 }
@@ -44,18 +46,27 @@ func (m *MockActionReverse) Do(s *goraff.Node, r *goraff.ReadableGraph, previous
 func TestFanOut_Do(t *testing.T) {
 	assert := assert.New(t)
 
+	inNodeName := "input_node"
+	InNodeKey := "in_result"
+	outNodeName := "out_result_node"
+	outNodeKey := "out_result_key"
+
 	// Scaff
 	scaff := &goraff.Scaff{}
 	// scaff.Blocks().Add("input1", &blockactions.Input{Value: "value1"})
-	reverseBlock := scaff.Blocks().Add("result", &MockActionReverse{InNode: "input_node"})
+	reverseBlock := scaff.Blocks().Add(outNodeName, &MockActionReverse{
+		InNode: inNodeName,
+		InKey:  InNodeKey,
+		OutKey: outNodeKey,
+	})
 	scaff.SetEntrypoint(reverseBlock)
 
 	// Parent Graph should have one node (which is the "previous node" triggering this action)
 	graph := &goraff.Graph{}
-	n1 := graph.NewNode("input_node", nil)
-	n1.AddStr("result", "value1")
-	n1.AddStr("result", "value2")
-	n1.AddStr("result", "value3")
+	n1 := graph.NewNode(inNodeName, nil)
+	n1.AddStr(InNodeKey, "value1")
+	n1.AddStr(InNodeKey, "value2")
+	n1.AddStr(InNodeKey, "value3")
 
 	// Create a node for the SUT action
 	rGraph := goraff.NewReadableGraph(graph)
@@ -63,8 +74,11 @@ func TestFanOut_Do(t *testing.T) {
 
 	// Create and Run the SUT
 	sut := blockactions.FanOut{
-		Scaff: scaff,
-		InKey: n1.Get().Name(),
+		Scaff:   scaff,
+		InNode:  n1.Get().Name(),
+		InKey:   InNodeKey,
+		OutNode: outNodeName,
+		OutKey:  outNodeKey,
 	}
 	err := sut.Do(sutNode, rGraph, n1.Get())
 	assert.Nil(err)
@@ -72,22 +86,22 @@ func TestFanOut_Do(t *testing.T) {
 	// Asserations
 	assert.Len(sutNode.Get().SubGraph(), 3)
 	subGraphs := sutNode.Get().SubGraph()
-	subInNode1, _ := subGraphs[0].FirstNodeByName(sut.InKey)
-	subInNode2, _ := subGraphs[1].FirstNodeByName(sut.InKey)
-	subInNode3, _ := subGraphs[2].FirstNodeByName(sut.InKey)
+	subInNode1, _ := subGraphs[0].FirstNodeByName(sut.InNode)
+	subInNode2, _ := subGraphs[1].FirstNodeByName(sut.InNode)
+	subInNode3, _ := subGraphs[2].FirstNodeByName(sut.InNode)
 
 	// Assert the subgraphs have been given the correct input values
-	assert.Equal("value1", subInNode1.FirstStr("result"))
-	assert.Equal("value2", subInNode2.FirstStr("result"))
-	assert.Equal("value3", subInNode3.FirstStr("result"))
+	assert.Equal("value1", subInNode1.FirstStr(sut.InKey))
+	assert.Equal("value2", subInNode2.FirstStr(sut.InKey))
+	assert.Equal("value3", subInNode3.FirstStr(sut.InKey))
 
 	// Assert the inputs have been correctly reversed within each subgraph
-	subRevNode1, _ := subGraphs[0].FirstNodeByName("result")
-	subRevNode2, _ := subGraphs[1].FirstNodeByName("result")
-	subRevNode3, _ := subGraphs[2].FirstNodeByName("result")
-	assert.Equal("1eulav", subRevNode1.FirstStr("result"))
-	assert.Equal("2eulav", subRevNode2.FirstStr("result"))
-	assert.Equal("3eulav", subRevNode3.FirstStr("result"))
+	subRevNode1, _ := subGraphs[0].FirstNodeByName(outNodeName)
+	subRevNode2, _ := subGraphs[1].FirstNodeByName(outNodeName)
+	subRevNode3, _ := subGraphs[2].FirstNodeByName(outNodeName)
+	assert.Equal("1eulav", subRevNode1.FirstStr(outNodeKey))
+	assert.Equal("2eulav", subRevNode2.FirstStr(outNodeKey))
+	assert.Equal("3eulav", subRevNode3.FirstStr(outNodeKey))
 
 	// Assert final output node result
 	assert.Len(sutNode.Get().All("result"), 3)
